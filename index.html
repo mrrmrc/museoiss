@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Video Fullscreen con Galleria + Popup Zoom & Statue Video</title>
+  <style>
+    /* Impostazioni generali */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      font-family: "Viner Hand ITC", cursive, sans-serif;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 0;
+      overflow-x: hidden;
+    }
+
+    /* Sfondo fisso con overlay scuro */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('./sfondo.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+    }
+
+    /* Contenitore del video principale */
+    #video-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    /* Video principale fullscreen mantenendo le proporzioni */
+    #myVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 2;
+    }
+
+    /* Barra pulsanti in fondo: contenuto equidistante senza wrapping */
+    #buttons-container {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-evenly;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 2;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Container per le icone */
+    .icon-container {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+
+    /* Icone */
+    .icon-wrapper {
+      width: 90px;
+      height: 60px;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .icon-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Testo sotto le icone: una sola riga */
+    .icon-text {
+      color: white;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-top: 8px;
+      text-align: center;
+      max-width: 160px;
+      white-space: nowrap;
+    }
+
+    /* Titolo e sottotitolo della galleria */
+    #gallery-title {
+      display: none;
+      text-align: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 20px 0 5px;
+      z-index: 2;
+      padding: 0 10px;
+    }
+
+    #gallery-subtitle {
+      display: none;
+      text-align: center;
+      color: white;
+      font-size: 1rem;
+      font-weight: normal;
+      margin: 0 0 20px;
+      z-index: 2;
+      padding: 0 15px;
+    }
+
+    /* Galleria dinamica */
+    #gallery {
+      display: none;
+      width: 100%;
+      background-color: rgba(17, 17, 17, 0.9);
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      grid-gap: 10px;
+      justify-items: center;
+      z-index: 2;
+    }
+
+    .gallery-item {
+      width: 100%;
+      max-width: 400px;
+      background-color: #222;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Footer con miniatura avatar e testo */
+    footer {
+      display: none;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    /* Avatar centrato */
+    #avatar-thumbnail-container {
+      display: inline-block;
+      position: relative;
+      width: 90px;
+      height: 60px;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    #avatar-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Testo sotto l'avatar */
+    #back-text {
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    /* Popup immagini */
+    #popupOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+    }
+
+    #popupContent {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #popupImg {
+      max-width: 100%;
+      max-height: calc(100vh - 120px);
+      /* Sottrai l'altezza del footer e istruzioni */
+      object-fit: contain;
+      touch-action: none;
+      user-select: none;
+      transform-origin: center center;
+      flex: 1;
+    }
+
+    /* Istruzioni per zoom e rotazione */
+    #zoomInstructions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      margin: 10px 0;
+      font-size: 0.9rem;
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto;
+      max-width: 90%;
+      z-index: 100000;
+    }
+
+    #zoomInstructions svg {
+      margin-right: 8px;
+      width: 24px;
+      height: 24px;
+    }
+
+    #popupFooter {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 15px 0;
+      text-align: center;
+      z-index: 100000;
+    }
+
+    #closePopupBtn {
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 10px 20px;
+    }
+
+    #closePopupBtn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Popup video statue con controlli testuali */
+    #videoPopupOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #videoPopupContent {
+      position: relative;
+      max-width: 90%;
+      max-height: 80%;
+      background-color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      border-radius: 6px;
+    }
+
+    #statueVideo {
+      width: 100%;
+      height: auto;
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      background: #000;
+    }
+
+    /* Controlli testuali per il video delle statue */
+    #videoTextControls {
+      margin-top: 20px;
+      color: white;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    #videoTextControls span {
+      margin: 0 10px;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 8px 16px;
+      background: rgba(0, 123, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    /* Stili specifici per tablet */
+    @media (max-width: 1024px) {
+      .icon-wrapper {
+        width: 70px;
+        height: 50px;
+      }
+
+      #gallery {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      #gallery-title {
+        font-size: 1.7rem;
+      }
+
+      #gallery-subtitle {
+        font-size: 0.9rem;
+        padding: 0 20px;
+      }
+    }
+
+    /* Stili per dispositivi mobili più piccoli */
+    @media (max-width: 600px) {
+      #buttons-container {
+        overflow-x: auto;
+        justify-content: center;
+      }
+
+      .icon-container {
+        margin: 0 8px;
+      }
+
+      .icon-wrapper {
+        width: 60px;
+        height: 40px;
+      }
+
+      .icon-text {
+        font-size: 0.8rem;
+      }
+
+      #gallery {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        padding: 10px;
+      }
+
+      #gallery-title {
+        font-size: 1.5rem;
+      }
+
+      /* Per assicurarsi che tutto sia visibile su schermi piccoli */
+      #zoomInstructions {
+        bottom: 60px;
+        font-size: 0.8rem;
+        padding: 5px 10px;
+      }
+    }
+
+    /* Stile di debug per mostrare errori di caricamento */
+    .load-error {
+      border: 2px solid red !important;
+    }
+
+    .debug-info {
+      position: fixed;
+      bottom: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px;
+      font-size: 10px;
+      z-index: 9999;
+      max-width: 200px;
+      overflow: auto;
+      max-height: 100px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- DEBUG INFO -->
+  <div id="debug-info" class="debug-info"></div>
+
+  <!-- VIDEO PRINCIPALE -->
+  <div id="video-container">
+    <video id="myVideo" playsinline>
+      <source src="./video/canovaovale.mp4" type="video/mp4">
+      Il tuo browser non supporta il tag video.
+    </video>
+  </div>
+
+  <!-- BARRA PULSANTI CON ICONE -->
+  <div id="buttons-container">
+    <!-- Icona restart -->
+    <div class="icon-container" id="restart-container">
+      <div class="icon-wrapper">
+        <img src="./icona.png" alt="Icona Restart"
+          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEIklEQVR4Ae2aA9DjQBSF/7Zt27Zt27Zt27Z3bdu2bdu2bc/pZie9k85kW537TvKdmW+bZPLuO7fJBEQWgUz58g2RLOPMeemGLbv22BSHkk9QIAshWQZD5pXr15Fnce1tUvM3MiNZxnIRRJYdcP7dj58/i4dMiLw4tBGDTNeSbyAhhXhk2foPnyF+pKQ4oKGNEGSamLyDP2SJUQGDFhsK9zKQZRlfSEiJQZadtA2ZEMl8YqE1QgqFvOvbmQXQGSsYZ+xtrv2u3xUgWcYXKHFAoIVDJqQ5VzSM1QhB9m9Cfg3+bTcNMiES+cQD1QgCBJlnvunvj3r/+g3UrN8MEsQ9MmNs2Kw1XL91B9i/f7F/yIQUs+sBqhEEADLP/P7DR2jTrRckiH0kRGj96xXgT2Aw7Dl4lB1vYtshE6KMrwYaBCHIPAss7Elzl0D8GPFChM5Wrg78CQkJuHLjFvu39h37mAvZL2QeqUYQBMg8C1TeOfPmgxb2kRCh4+SpAH9DQoNg6fodIMT+6RsyIUbY1UCDIAw5KCgIrt++D2myFWELO0qkyJAgdl72b5F/pEhRoG7ztsz/3cdPUKlWI1NhUYB+XDYDQkxB5mH+p+vHD5Oja1nLITet0wB+h4TA5OVrFUP2C5kQXaCrQUDIcxcuQZx4CVg3kRKmhLRZs8Prtx8gOCQEXrx8DfFiJ/QbtpbBnSZnCRhy9TrkiJ+RdRNl0pfQFFqIERNuvHgAf0ND4fWXd5AxYXrTkDVCoMUCjQAO+carZ5AqZUo488Afjrb/Q5e0SHhNqtwl4M2797B45XpVoW8/uA9pUqSAiw8vQ68aXRWh6TVl/nLw9PSCPMUqsKcCKGTqJpaVqAyRkqUK8Ts4CNqN6w2HFuyD1h26wumrt+HaRX9Ilzo5PH35Gs4/vA0zxi+AfQcOgr+/v2LRRBpqIVSY0RuePX8Jl0+dhZbdepqGTIhZUzagPCYhx/5DpvmLtKUKBTl/eEG2/CzzXuPWcPHgCQgKCoKeIwcy/0jjp6SFHid+bPbx3v2HIPjnr5ChIXuxeOnhX+oSQ77Rr7lyyIQ0dyEZG0IUZMpcpVqN4cfPX9BmUF+2sA7H64dBUaNHh8LVasGdh4/g0rXbMGHUJBbC5esPmGwkQSIiSJIqI1y7dsM05HHLZkG8bNnhV1AQDI77B9q1bgtBwT9Z19Jt9ABWmGNnzIVXr99AtqwZISwsHDJlyQx7jx4PETLGRaYJayYdOVLa0/j7aStWw6OnL1R1HSRKnRXNQKYxP/5Eh8YMFM8fBJk85PjJ0zBj3gJVQ5gQz8XT29nXt+Zov38csmwAwpJkw9ZdfHMI8sMPn0IOQ5Zt+9aRbE627Z1Z2aZk2w5xZRvl2XbgLdv0L9sWQrJt9SUbgr8wUGsKerL+VAAAAABJRU5ErkJggg=='">
+      </div>
+      <div class="icon-text">Riavvia Presentazione</div>
+    </div>
+    <!-- Icona galleria -->
+    <div class="icon-container" id="gallery-thumbnail-container">
+      <div class="icon-wrapper">
+        <img src="./galleria.png" alt="Anteprima galleria"
+          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEfklEQVR4Ae2bBZQjORCGv5mZOcMxhJmZmZkv/M4wHDMzM9wxHDMzMzMzM/uwb5PtUSft6Z7prJ58r+pV0lIpdSorUQokKnGPJkXVDdevm1Wbt9PQ4ldyJEuKMsWJeefTr19JK6ncmKJVvClRNVFTWnbwlEUjnVQCZBCFdPHESdTCT58/p+hg/8jxDtJJu2BqR4h0kkXDSidVAIVX0mXbtlPG1FhPICOddKGdIZ10MfwifVVApxEvCOkUbOmkE3Tld+/fq9o9einHSKfsVRvUuw+fVNcRk9XeQ0cNgHYeOKL1vbPHBZSOT0TSSV9R+vrXb5+p/sBRKnXiBOYgp9Vt2FQi33+kOg4YExjSCUcigNJJqmqz9obXX719rzr2G6nSJEpvlqcCg00fPn+jqrfvZQto3L0nkPxLJ2dIpw8fPlLTDj2sIIPqlq8a53t/fKe69B2o8ibLb4mSVq1a+fYdKx07TRo1hNJJq+ofP36qhq16qkSRYlpDfvrhY7Xz0GHVos8glSlpYQus4ZNnKrPbkH5HJpTSSat/9OypatiypwWSBTbWo/PkaWcW2EQ7j55WOQrWULv2H7QVGOSvTt6nkQ5rj6STzqrfvftAtew7XEWLFtUCW7NOMwX6N2/eqXrtuqpsiQtbDEWJq7fr+gvrIeKADRvppFP68dPn1WxFbimHTNI9CjRRnz59UbMWLVfZUha1AFqnektFyvr79x/VoMkTfQM2gNJJs/pLV2+o6lXqqQQJwlXxghXVuw8f1Lote1SBLJUsQqZOly4d1eev39X0ZRtVhniZ/YZMOLxIJ63qD1y4rCpXqqz2X76phpZrqhKEp1RJwlOrrZduqGqVy6mrt+6qpVsOqzzJSwQCNuLwIp20qr9646bKmjGTOnn9jpqcsaWKESuGypKmmFp8+prKnD6tuvXorZq7Yb/KlbRUIGAjDi/SSevsJUtIcbXz+C115MxxtevoWXX+1kN16MQFdeXmY9V/+GSVMFZCCyAX2PA+7G/ppNX/+u0nqmmbzipSzKgqW9VmKnXKVCpVqiQqduRoKkvGjCpypOhWKEsXr6xAeOPOvbHBRnv8Ip20+g4cN0elStdApUuTTkWLEkXFjh5NJYoaVSVLkFgVL51XxYsfSaVKm15ZwnuX7RQ5Z2ZSp82q0qbLpjJmzaXS5ymn4iTPqBIky6DiJc+s4iTJoGIlTKfiJEmn4iXLoJJmzKWyFCrv0nPvyeuEUDpp9adeulqR8mRRh45eUslTpVMpcmRRpOw5leP0GUXKlkUlz5hZkeJmVsmzZVFZixZW6VNl8Lt0OJLJqXTSCnn38YtKlzqlOnzxhMpcuJjKnDWXSpeviMrUso3KVKCwypyvkMpYoIhKX7iYSl+4mMrUrLWO90gfO02OcCST04jnbHAKdM22PY6nQ1+X797vEyRnEcfpw+w66Yzrp1dvdNvvLF2/7/Tx3jGSafDcVe71dfpoM92wfY+UfrTjdALrx+4jXLZ5Bw0qfiVTssQoUxyfcP8BNCiqK7YzwtUAAAAASUVORK5CYII='">
+      </div>
+      <div class="icon-text">Galleria immagini e audio</div>
+    </div>
+  </div>
+
+  <!-- Titolo e sottotitolo della Galleria -->
+  <div id="gallery-title">TAVOLE MIOLOGICHE E STATUE</div>
+  <div id="gallery-subtitle">Tocca le tavole per esplorarle e le statue, per ascoltarne il suono dei muscoli mentre
+    ricoprono le statue.</div>
+
+  <!-- GALLERIA (inizialmente nascosta) -->
+  <div id="gallery"></div>
+
+  <!-- FOOTER CON MINIATURA AVATAR E TESTO -->
+  <footer>
+    <div id="avatar-thumbnail-container">
+      <video id="avatar-thumbnail" playsinline muted>
+        <source src="./video/canovaovale.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div id="back-text">Torna al menu</div>
+  </footer>
+
+  <!-- POPUP IMMAGINE (1..17) -->
+  <div id="popupOverlay">
+    <div id="popupContent">
+      <img id="popupImg" src="" alt="Popup Image">
+      <div id="zoomInstructions">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3h-6zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3v6zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6h6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6v-6z"
+            fill="white" />
+        </svg>
+        <span>Usa due dita per zoomare e ruotare l'immagine</span>
+      </div>
+      <div id="popupFooter">
+        <button id="closePopupBtn">Torna Indietro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP VIDEO (STATUE 1..7) -->
+  <div id="videoPopupOverlay">
+    <div id="videoPopupContent">
+      <video id="statueVideo" src="" preload="metadata" playsinline></video>
+      <!-- Controlli testuali: RIascolta e Torna alla Gallery -->
+      <div id="videoTextControls">
+        <span id="statueReplayText">Riascolta</span>
+        <span id="closeVideoPopupText">Torna alla Gallery</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DEBUG HELPER
+    const debugInfo = document.getElementById('debug-info');
+    function logDebug(message) {
+     // debugInfo.style.display = "block";
+     // debugInfo.innerHTML += message + "<br>";
+     // console.log(message);
+    }
+
+    // Rilevamento dispositivo mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      logDebug("Dispositivo mobile rilevato: " + navigator.userAgent);
+    }
+
+    // ELEMENTI HTML
+    const myVideo = document.getElementById('myVideo');
+    const videoContainer = document.getElementById('video-container');
+    const restartContainer = document.getElementById('restart-container');
+    const galleryThumbnailContainer = document.getElementById('gallery-thumbnail-container');
+    const gallery = document.getElementById('gallery');
+    const galleryTitle = document.getElementById('gallery-title');
+    const gallerySubtitle = document.getElementById('gallery-subtitle');
+    const avatarThumbnail = document.getElementById('avatar-thumbnail');
+    const avatarThumbnailContainer = document.getElementById('avatar-thumbnail-container');
+    const backText = document.getElementById('back-text');
+    const buttonsCont = document.getElementById('buttons-container');
+    const footer = document.querySelector('footer');
+
+    // Popup immagini
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupImg = document.getElementById('popupImg');
+    const closePopupBtn = document.getElementById('closePopupBtn');
+    const zoomInstructions = document.getElementById('zoomInstructions');
+
+    // Popup video statue - controlli testuali
+    const videoPopupOverlay = document.getElementById('videoPopupOverlay');
+    const statueVideo = document.getElementById('statueVideo');
+    const statueReplayText = document.getElementById('statueReplayText');
+    const closeVideoPopupText = document.getElementById('closeVideoPopupText');
+
+    // Verifica disponibilità file
+    function checkFile(url, callback) {
+      fetch(url, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            callback(true);
+          } else {
+            callback(false);
+            logDebug(`File non trovato: ${url}`);
+          }
+        })
+        .catch(() => {
+          callback(false);
+          logDebug(`Errore nel verificare: ${url}`);
+        });
+    }
+
+    // Avvio video principale con gestione errori
+    function initMainVideo() {
+      checkFile('./video/canovaovale.mp4', (exists) => {
+        if (exists) {
+          myVideo.load();
+          document.addEventListener('click', () => {
+            const playPromise = myVideo.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                logDebug("Errore autoplay: " + error);
+                // Aggiungiamo un pulsante play visibile
+                const playButton = document.createElement('div');
+                playButton.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;padding:20px;border-radius:50%;font-size:20px;cursor:pointer;z-index:10;';
+                playButton.innerHTML = '▶';
+                videoContainer.appendChild(playButton);
+                playButton.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  myVideo.play();
+                  playButton.remove();
+                });
+              });
+            }
+          }, { once: true });
+        } else {
+          videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Video non disponibile</div>';
+          logDebug("Video principale non trovato");
+        }
+      });
+    }
+
+    // Avvio all'apertura della pagina
+    document.addEventListener('DOMContentLoaded', initMainVideo);
+
+    // Gestione click sul video
+    videoContainer.addEventListener('click', () => {
+      if (myVideo.paused) {
+        const playPromise = myVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => logDebug("Errore play su click: " + error));
+        }
+      } else {
+        myVideo.pause();
+      }
+    });
+
+    // Gestione fine video
+    myVideo.addEventListener('ended', () => {
+      myVideo.currentTime = 0;
+      myVideo.pause();
+    });
+
+    // Riavvio video
+    restartContainer.addEventListener('click', () => {
+      myVideo.currentTime = 0;
+      const playPromise = myVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => logDebug("Errore riavvio: " + error));
+      }
+    });
+
+    // GESTIONE GALLERIA DINAMICA con fallback
+    function populateGallery() {
+      gallery.innerHTML = '';
+
+      // Aggiungi immagini normali
+      for (let i = 1; i <= 17; i++) {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+
+        const img = document.createElement('img');
+        const imgPath = `./immagini/${i}.jpg`;
+
+        // Verifica immagine e imposta fallback
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${i}</text></svg>`;
+          this.parentNode.classList.add('load-error');
+          logDebug(`Immagine ${i} non trovata`);
+        };
+
+        img.src = imgPath;
+        img.alt = `Immagine numero ${i}`;
+
+        img.addEventListener('click', () => openImagePopup(img.src));
+        div.appendChild(img);
+        gallery.appendChild(div);
+      }
+
+      // Aggiungi immagini statue
+      for (let i = 1; i <= 7; i++) {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+
+        const img = document.createElement('img');
+        const imgPath = `./immagini/statue${i}.jpg`;
+
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Statua ${i}</text></svg>`;
+          this.parentNode.classList.add('load-error');
+          logDebug(`Immagine statua ${i} non trovata`);
+        };
+
+        img.src = imgPath;
+        img.alt = `Statua numero ${i}`;
+
+        img.addEventListener('click', () => openStatueVideoPopup(i));
+        div.appendChild(img);
+        gallery.appendChild(div);
+      }
+    }
+
+    // Apertura galleria
+    galleryThumbnailContainer.addEventListener('click', () => {
+      myVideo.pause();
+      populateGallery();
+      // Nascondi il contenitore del video
+      videoContainer.style.display = 'none';
+      buttonsCont.style.display = 'none';
+      gallery.style.display = 'grid';
+      galleryTitle.style.display = 'block';
+      gallerySubtitle.style.display = 'block';
+      footer.style.display = 'block';
+
+      // Carica e avvia la miniatura
+      avatarThumbnail.load();
+      const thumbPromise = avatarThumbnail.play();
+      if (thumbPromise !== undefined) {
+        thumbPromise.catch(error => logDebug("Errore thumbnail play: " + error));
+      }
+    });
+
+    // Ritorno al menu principale
+    function backToMain() {
+      gallery.style.display = 'none';
+      galleryTitle.style.display = 'none';
+      gallerySubtitle.style.display = 'none';
+      footer.style.display = 'none';
+      // Mostra di nuovo il contenitore del video
+      videoContainer.style.display = 'flex';
+      buttonsCont.style.display = 'flex';
+      avatarThumbnail.pause();
+    }
+
+    avatarThumbnailContainer.addEventListener('click', backToMain);
+    backText.addEventListener('click', backToMain);
+
+    // Variabili per pinch & rotate (popup immagini)
+    let currentScale = 1;
+    let currentRotate = 0;
+    let startDistance = 0;
+    let startAngle = 0;
+    let initialScale = 1;
+    let initialRotate = 0;
+    const activePointers = {};
+
+    // POPUP IMMAGINE con gestione errori e istruzioni zoom
+    function openImagePopup(src) {
+      popupImg.onerror = function () {
+        this.onerror = null;
+        this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
+        logDebug(`Errore caricamento popup immagine: ${src}`);
+      };
+
+      popupImg.src = src;
+      popupOverlay.style.display = 'flex';
+      currentScale = 1;
+      currentRotate = 0;
+      popupImg.style.transform = `scale(${currentScale}) rotate(${currentRotate}deg)`;
+
+      // Mostra le istruzioni di zoom solo su dispositivi touch
+      if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        zoomInstructions.style.display = 'flex';
+      } else {
+        zoomInstructions.style.display = 'none';
+      }
+    }
+
+    function closeImagePopup() {
+      popupOverlay.style.display = 'none';
+    }
+
+    closePopupBtn.addEventListener('click', closeImagePopup);
+
+    // Gestione touch per zoom e rotazione
+    function onPointerDown(e) {
+      e.preventDefault();
+      popupImg.setPointerCapture(e.pointerId);
+      activePointers[e.pointerId] = e;
+      if (Object.keys(activePointers).length === 2) prepareTransform();
+    }
+
+    function onPointerMove(e) {
+      if (!activePointers[e.pointerId]) return;
+      activePointers[e.pointerId] = e;
+      if (Object.keys(activePointers).length === 2) doTransform();
+    }
+
+    function onPointerUpOrCancel(e) {
+      popupImg.releasePointerCapture(e.pointerId);
+      delete activePointers[e.pointerId];
+    }
+
+    function prepareTransform() {
+      const [p1, p2] = Object.values(activePointers);
+      startDistance = getDistance(p1, p2);
+      startAngle = getAngle(p1, p2);
+      initialScale = currentScale;
+      initialRotate = currentRotate;
+    }
+
+    function doTransform() {
+      const [p1, p2] = Object.values(activePointers);
+      const newDistance = getDistance(p1, p2);
+      const newAngle = getAngle(p1, p2);
+      const scaleFactor = newDistance / startDistance;
+      currentScale = initialScale * scaleFactor;
+      const angleDiff = newAngle - startAngle;
+      currentRotate = initialRotate + angleDiff;
+      if (currentScale < 0.5) currentScale = 0.5;
+      if (currentScale > 5.0) currentScale = 5.0;
+      popupImg.style.transform = `scale(${currentScale}) rotate(${currentRotate}deg)`;
+    }
+
+    function getDistance(e1, e2) {
+      const dx = e2.clientX - e1.clientX;
+      const dy = e2.clientY - e1.clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function getAngle(e1, e2) {
+      const dx = e2.clientX - e1.clientX;
+      const dy = e2.clientY - e1.clientY;
+      const radians = Math.atan2(dy, dx);
+      return radians * (180 / Math.PI);
+    }
+
+    popupImg.addEventListener('pointerdown', onPointerDown);
+    popupImg.addEventListener('pointermove', onPointerMove);
+    popupImg.addEventListener('pointerup', onPointerUpOrCancel);
+    popupImg.addEventListener('pointercancel', onPointerUpOrCancel);
+
+    // POPUP VIDEO STATUE con gestione errori
+    function openStatueVideoPopup(index) {
+      const videoPath = `./video/video${index}.mp4`;
+
+      // Verifica disponibilità video
+      checkFile(videoPath, (exists) => {
+        if (exists) {
+          statueVideo.src = videoPath;
+          videoPopupOverlay.style.display = 'flex';
+
+          // Carica e avvia video con gestione errori
+          statueVideo.load();
+          const videoPromise = statueVideo.play();
+          if (videoPromise !== undefined) {
+            videoPromise.catch(error => {
+              logDebug(`Errore avvio video statua ${index}: ${error}`);
+
+              // Aggiungi pulsante play se autoplay fallisce
+              const playButton = document.createElement('div');
+              playButton.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;padding:20px;border-radius:50%;font-size:20px;cursor:pointer;z-index:10;';
+              playButton.innerHTML = '▶';
+              videoPopupContent.appendChild(playButton);
+              playButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                statueVideo.play();
+                playButton.remove();
+              });
+            });
+          }
+        } else {
+          logDebug(`Video statua ${index} non trovato`);
+          alert(`Video della statua ${index} non disponibile`);
+        }
+      });
+    }
+
+    function closeStatueVideoPopup() {
+      videoPopupOverlay.style.display = 'none';
+      statueVideo.pause();
+      statueVideo.currentTime = 0;
+    }
+
+    // Controlli testuali per il video delle statue
+    statueReplayText.addEventListener('click', () => {
+      statueVideo.currentTime = 0;
+      const replayPromise = statueVideo.play();
+      if (replayPromise !== undefined) {
+        replayPromise.catch(error => logDebug("Errore replay: " + error));
+      }
+    });
+
+    closeVideoPopupText.addEventListener('click', closeStatueVideoPopup);
+
+    // Chiusura popup su click all'esterno
+    popupOverlay.addEventListener('click', e => {
+      if (e.target === popupOverlay) closeImagePopup();
+    });
+
+    videoPopupOverlay.addEventListener('click', e => {
+      if (e.target === videoPopupOverlay) closeStatueVideoPopup();
+    });
+
+    // Gestione errori per il video principale
+    myVideo.addEventListener('error', function () {
+      logDebug("Errore caricamento video principale: " + (myVideo.error ? myVideo.error.message : "Sconosciuto"));
+      videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Video non disponibile. Tocca per riprovare.</div>';
+      videoContainer.addEventListener('click', initMainVideo);
+    });
+
+    // Controllo online/offline per dispositivi mobili
+    window.addEventListener('online', function () {
+      logDebug('Dispositivo online - ricaricamento risorse');
+      initMainVideo();
+    });
+
+    window.addEventListener('offline', function () {
+      logDebug('Dispositivo offline - possibili problemi di caricamento');
+    });
+
+    // Per debug - mostra informazioni sui percorsi
+    if (isMobile) {
+      logDebug("Percorso assoluto video: " + new URL('./video/canovaovale.mp4', window.location.href).href);
+      logDebug("Percorso assoluto icona: " + new URL('./icona.png', window.location.href).href);
+    }
+  </script>
+</body>
+
+</html>

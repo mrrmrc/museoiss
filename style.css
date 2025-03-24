@@ -1,0 +1,117 @@
+/* === Layout Generale === */
+/* Rimuove scorrimento e adatta tutto al viewport */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    /* Niente barre di scorrimento */
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* === Video nella Parte Superiore === */
+/* Video che occupa il 30% dello schermo */
+#canovaVideo {
+    width: 100%;
+    /* Occupa tutta la larghezza */
+    height: 30vh;
+    /* Occupa il 30% dell'altezza */
+    object-fit: cover;
+    /* Mantiene proporzioni */
+    cursor: pointer;
+    /* Indica che è cliccabile */
+}
+
+/* === Galleria === */
+/* Galleria che occupa il 70% dello schermo */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10vw, 1fr));
+    /* Colonne flessibili */
+    gap: 5px;
+    /* Spazi tra le immagini/video */
+    padding: 5px;
+    height: 70vh;
+    /* Occupa il restante 70% */
+    box-sizing: border-box;
+    /* Per includere padding nel calcolo delle dimensioni */
+}
+
+/* Immagini nella galleria */
+.gallery img,
+.gallery video {
+    width: 100%;
+    /* Occupa lo spazio della cella */
+    height: 100%;
+    /* Occupa tutta l'altezza */
+    object-fit: cover;
+    /* Mantiene proporzioni senza distorsioni */
+    cursor: pointer;
+    border: 2px solid white;
+    transition: transform 0.2s;
+    /* Animazione di ingrandimento */
+}
+
+/* Effetto zoom al passaggio del mouse o tocco */
+.gallery img:hover,
+.gallery video:hover {
+    transform: scale(1.1);
+    /* Zoom leggero */
+}
+
+/* === Lightbox === */
+/* Contenitore per l'immagine/video ingrandito */
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    /* Sfondo semitrasparente */
+    display: none;
+    /* Nascondi per impostazione predefinita */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    /* Porta il lightbox sopra tutto */
+}
+
+/* Immagine nel lightbox */
+.lightbox img {
+    max-width: 80%;
+    /* Limita larghezza */
+    max-height: 80%;
+    /* Limita altezza */
+    margin-bottom: 10px;
+}
+
+/* Video nel lightbox */
+.lightbox video {
+    max-width: 90%;
+    /* Limita larghezza */
+    max-height: 90%;
+    /* Limita altezza */
+}
+
+/* === Bottone "Home" === */
+/* Bottone per tornare alla galleria */
+.home-button {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Effetto hover sul bottone */
+.home-button:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: black;
+}
