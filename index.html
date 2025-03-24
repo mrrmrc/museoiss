@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
-  <title>Video Fullscreen con Galleria + Popup Zoom & Statue Video</title>
+  <title>Video Fullscreen con Galleria + Popup Zoom</title>
   <style>
     /* Impostazioni generali */
     html,
@@ -21,20 +20,6 @@
       position: relative;
       z-index: 0;
       overflow-x: hidden;
-    }
-    #main-title {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: white;
-      font-size: 3rem;
-      font-weight: bold;
-      text-align: center;
-      z-index: 10;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-      font-family: 'Rock Salt', cursive, sans-serif;
-      padding: 10px 20px;
     }
 
     /* Sfondo fisso con overlay scuro */
@@ -81,7 +66,7 @@
       gap: 1rem;
       padding: 1rem;
       background-color: rgba(0, 0, 0, 0.7);
-      z-index: 2;
+      z-index: 10;
       width: 100%;
       box-sizing: border-box;
     }
@@ -121,35 +106,25 @@
       white-space: nowrap;
     }
 
-    /* Titolo e sottotitolo della galleria */
-    #gallery-title {
+    /* Container principale per la galleria */
+    #gallery-container {
       display: none;
-      text-align: center;
-      color: white;
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 20px 0 5px;
-      z-index: 2;
-      padding: 0 10px;
-    }
-
-    #gallery-subtitle {
-      display: none;
-      text-align: center;
-      color: white;
-      font-size: 1rem;
-      font-weight: normal;
-      margin: 0 0 20px;
-      z-index: 2;
-      padding: 0 15px;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 100px; /* Lascia spazio per i pulsanti in basso */
+      z-index: 5;
     }
 
     /* Galleria dinamica */
     #gallery {
-      display: none;
       width: 100%;
       background-color: rgba(17, 17, 17, 0.9);
-      padding: 20px;
+      padding: 10px;
       box-sizing: border-box;
       overflow-y: auto;
       display: grid;
@@ -157,6 +132,7 @@
       grid-gap: 10px;
       justify-items: center;
       z-index: 2;
+      flex: 1;
     }
 
     .gallery-item {
@@ -175,39 +151,101 @@
       object-fit: cover;
     }
 
-    /* Footer con miniatura avatar e testo */
-    footer {
-      display: none;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 15px;
-      text-align: center;
-      z-index: 2;
+    /* Gallery slider per i video */
+    #video-slider-container {
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 10px 0;
+      box-sizing: border-box;
+      position: relative;
+      flex: 0 0 auto;
+      height: 200px;
     }
 
-    /* Avatar centrato */
-    #avatar-thumbnail-container {
-      display: inline-block;
-      position: relative;
-      width: 90px;
-      height: 60px;
+    #video-slider {
+      display: flex;
+      overflow: hidden; /* Nasconde le barre di scorrimento */
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      padding: 0 15px;
+      height: 100%;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    /* Nasconde la scrollbar per Chrome, Safari e Opera */
+    #video-slider::-webkit-scrollbar {
+      display: none;
+    }
+
+    .video-slide {
+      flex: 0 0 auto;
+      width: 250px;
+      margin-right: 15px;
+      scroll-snap-align: start;
       border: 2px solid #007BFF;
       border-radius: 6px;
       overflow: hidden;
-      margin: 0 auto;
+      background: #111;
+      cursor: pointer;
+      height: 180px;
     }
 
-    #avatar-thumbnail {
+    .video-slide img {
       width: 100%;
-      height: 100%;
+      height: 140px;
       object-fit: cover;
     }
 
-    /* Testo sotto l'avatar */
-    #back-text {
+    .video-title {
+      padding: 8px;
+      text-align: center;
       color: white;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: bold;
-      margin-top: 8px;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .slider-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 123, 255, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    #prev-btn {
+      left: 10px;
+    }
+
+    #next-btn {
+      right: 10px;
+    }
+
+    /* Pulsante per tornare al menu */
+    #back-to-menu-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 10px 15px;
+      background-color: rgba(0, 123, 255, 0.7);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      z-index: 10;
     }
 
     /* Popup immagini */
@@ -237,7 +275,6 @@
     #popupImg {
       max-width: 100%;
       max-height: calc(100vh - 120px);
-      /* Sottrai l'altezza del footer e istruzioni */
       object-fit: contain;
       touch-action: none;
       user-select: none;
@@ -297,7 +334,7 @@
       background-color: #0056b3;
     }
 
-    /* Popup video statue con controlli testuali */
+    /* Popup video statue */
     #videoPopupOverlay {
       position: fixed;
       top: 0;
@@ -359,14 +396,13 @@
       #gallery {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
-
-      #gallery-title {
-        font-size: 1.7rem;
+      
+      #gallery-container {
+        bottom: 85px;
       }
-
-      #gallery-subtitle {
-        font-size: 0.9rem;
-        padding: 0 20px;
+      
+      .video-slide {
+        width: 200px;
       }
     }
 
@@ -394,9 +430,9 @@
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         padding: 10px;
       }
-
-      #gallery-title {
-        font-size: 1.5rem;
+      
+      #gallery-container {
+        bottom: 75px;
       }
 
       /* Per assicurarsi che tutto sia visibile su schermi piccoli */
@@ -405,35 +441,29 @@
         font-size: 0.8rem;
         padding: 5px 10px;
       }
+      
+      .video-slide {
+        width: 180px;
+      }
+      
+      .video-title {
+        font-size: 0.8rem;
+      }
+      
+      #back-to-menu-button {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+      }
     }
 
     /* Stile di debug per mostrare errori di caricamento */
     .load-error {
       border: 2px solid red !important;
     }
-
-    .debug-info {
-      position: fixed;
-      bottom: 5px;
-      left: 5px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 5px;
-      font-size: 10px;
-      z-index: 9999;
-      max-width: 200px;
-      overflow: auto;
-      max-height: 100px;
-      display: none;
-    }
   </style>
 </head>
 
 <body>
-  <h1 id="main-title">CANOVA EXPERIENCE</h1>
-  <!-- DEBUG INFO -->
-  <div id="debug-info" class="debug-info"></div>
-
   <!-- VIDEO PRINCIPALE -->
   <div id="video-container">
     <video id="myVideo" playsinline>
@@ -442,13 +472,29 @@
     </video>
   </div>
 
-  <!-- BARRA PULSANTI CON ICONE -->
+  <!-- Container per galleria e relativi elementi -->
+  <div id="gallery-container">
+    <!-- Pulsante per tornare al menu principale -->
+    <button id="back-to-menu-button">Torna al Menu</button>
+    
+    <!-- GALLERIA IMMAGINI -->
+    <div id="gallery"></div>
+    
+    <!-- GALLERIA VIDEO SLIDER -->
+    <div id="video-slider-container">
+      <button class="slider-nav" id="prev-btn">&lt;</button>
+      <div id="video-slider"></div>
+      <button class="slider-nav" id="next-btn">&gt;</button>
+    </div>
+  </div>
+
+  <!-- BARRA PULSANTI CON ICONE (sempre visibili) -->
   <div id="buttons-container">
     <!-- Icona restart -->
     <div class="icon-container" id="restart-container">
       <div class="icon-wrapper">
         <img src="./icona.png" alt="Icona Restart"
-          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEIklEQVR4Ae2aA9DjQBSF/7Zt27Zt27Zt27Z3bdu2bdu2bc/pZie9k85kW537TvKdmW+bZPLuO7fJBEQWgUz58g2RLOPMeemGLbv22BSHkk9QIAshWQZD5pXr15Fnce1tUvM3MiNZxnIRRJYdcP7dj58/i4dMiLw4tBGDTNeSbyAhhXhk2foPnyF+pKQ4oKGNEGSamLyDP2SJUQGDFhsK9zKQZRlfSEiJQZadtA2ZEMl8YqE1QgqFvOvbmQXQGSsYZ+xtrv2u3xUgWcYXKHFAoIVDJqQ5VzSM1QhB9m9Cfg3+bTcNMiES+cQD1QgCBJlnvunvj3r/+g3UrN8MEsQ9MmNs2Kw1XL91B9i/f7F/yIQUs+sBqhEEADLP/P7DR2jTrRckiH0kRGj96xXgT2Aw7Dl4lB1vYtshE6KMrwYaBCHIPAss7Elzl0D8GPFChM5Wrg78CQkJuHLjFvu39h37mAvZL2QeqUYQBMg8C1TeOfPmgxb2kRCh4+SpAH9DQoNg6fodIMT+6RsyIUbY1UCDIAw5KCgIrt++D2myFWELO0qkyJAgdl72b5F/pEhRoG7ztsz/3cdPUKlWI1NhUYB+XDYDQkxB5mH+p+vHD5Oja1nLITet0wB+h4TA5OVrFUP2C5kQXaCrQUDIcxcuQZx4CVg3kRKmhLRZs8Prtx8gOCQEXrx8DfFiJ/QbtpbBnSZnCRhy9TrkiJ+RdRNl0pfQFFqIERNuvHgAf0ND4fWXd5AxYXrTkDVCoMUCjQAO+carZ5AqZUo488Afjrb/Q5e0SHhNqtwl4M2797B45XpVoW8/uA9pUqSAiw8vQ68aXRWh6TVl/nLw9PSCPMUqsKcCKGTqJpaVqAyRkqUK8Ts4CNqN6w2HFuyD1h26wumrt+HaRX9Ilzo5PH35Gs4/vA0zxi+AfQcOgr+/v2LRRBpqIVSY0RuePX8Jl0+dhZbdepqGTIhZUzagPCYhx/5DpvmLtKUKBTl/eEG2/CzzXuPWcPHgCQgKCoKeIwcy/0jjp6SFHid+bPbx3v2HIPjnr5ChIXuxeOnhX+oSQ77Rr7lyyIQ0dyEZG0IUZMpcpVqN4cfPX9BmUF+2sA7H64dBUaNHh8LVasGdh4/g0rXbMGHUJBbC5esPmGwkQSIiSJIqI1y7dsM05HHLZkG8bNnhV1AQDI77B9q1bgtBwT9Z19Jt9ABWmGNnzIVXr99AtqwZISwsHDJlyQx7jx4PETLGRaYJayYdOVLa0/j7aStWw6OnL1R1HSRKnRXNQKYxP/5Eh8YMFM8fBJk85PjJ0zBj3gJVQ5gQz8XT29nXt+Zov38csmwAwpJkw9ZdfHMI8sMPn0IOQ5Zt+9aRbE627Z1Z2aZk2w5xZRvl2XbgLdv0L9sWQrJt9SUbgr8wUGsKerL+VAAAAABJRU5ErkJggg=='">
+          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEIklEQVR4Ae2aA9DjQBSF/7Zt27Zt27Zt27Z3bdu2bdu2bc/pZie9k85kW537TvKdmW+bZPLuO7fJBEQWgUz58g2RLOPMeemGLbv22BSHkk9QIAshWQZD5pXr15Fnce1tUvM3MiNZxnIRRJYdcP7dj58/i4dMiLw4tBGDTNeSbyAhhXhk2foPnyF+pKQ4oKGNEGSamLyDP2SJUQGDFhsK9zKQZRlfSEiJQZadtA2ZEMl8YqE1QgqFvOvbmQXQGSsYZ+xtrv2u3xUgWcYXKHFAoIVDJqQ5VzSM1QhB9m9Cfg3+bTcNMiES+cQD1QgCBJlnvunvj3r/+g3UrN8MEsQ9MmNs2Kw1XL91B9i/f7F/yIQUs+sBqhEEADLP/P7DR2jTrRckiH0kRGj96xXgT2Aw7Dl4lB1vYtshE6KMrwYaBCHIPAss7Elzl0D8GPFChM5Wrg78CQkJuHLjFvu39h37mAvZL2QeqUYQBMg8C1TeOfPmgxb2kRCh4+SpAH9DQoNg6fodIMT+6RsyIUbY1UCDIAw5KCgIrt++D2myFWELO0qkyJAgdl72b5F/pEhRoG7ztsz/3cdPUKlWI1NhUYB+XDYDQkxB5mH+p+vHD5Oja1nLITet0wB+h4TA5OVrFUP2C5kQXaCrQUDIcxcuQZx4CVg3kRKmhLRZs8Prtx8gOCQEXrx8DfFiJ/QbtpbBnSZnCRhy9TrkiJ+RdRNl0pfQFFqIERNuvHgAf0ND4fWXd5AxYXrTkDVCoMUCjQAO+carZ5AqZUo488Afjrb/Q5e0SHhNqtwl4M2797B45XpVoW8/uA9pUqSAiw8vQ68aXRWh6TVl/nLw9PSCPMUqsKcCKGTqJpaVqAyRkqUK8Ts4CNqN6w2HFuyD1h26wemrt+HaRX9Ilzo5PH35Gs4/vA0zxi+AfQcOgr+/v2LRRBpqIVSY0RuePX8Jl0+dhZbdepqGTIhZUzagPCYhx/5DpvmLtKUKBTl/eEG2/CzzXuPWcPHgCQgKCoKeIwcy/0jjp6SFHid+bPbx3v2HIPjnr5ChIXuxeOnhX+oSQ77Rr7lyyIQ0dyEZG0IUZMpcpVqN4cfPX9BmUF+2sA7H64dBUaNHh8LVasGdh4/g0rXbMGHUJBbC5esPmGwkQSIiSJIqI1y7dsM05HHLZkG8bNnhV1AQDI77B9q1bgtBwT9Z19Jt9ABWmGNnzIVXr99AtqwZISwsHDJlyQx7jx4PETLGRaYJayYdOVLa0/j7aStWw6OnL1R1HSRKnRXNQKYxP/5Eh8YMFM8fBJk85PjJ0zBj3gJVQ5gQz8XT29nXt+Zov38csmwAwpJkw9ZdfHMI8sMPn0IOQ5Zt+9aRbE627Z1Z2aZk2w5xZRvl2XbgLdv0L9sWQrJt9SUbgr8wUGsKerL+VAAAAABJRU5ErkJggg=='">
       </div>
       <div class="icon-text">Riavvia Presentazione</div>
     </div>
@@ -456,31 +502,13 @@
     <div class="icon-container" id="gallery-thumbnail-container">
       <div class="icon-wrapper">
         <img src="./galleria.png" alt="Anteprima galleria"
-          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEfklEQVR4Ae2bBZQjORCGv5mZOcMxhJmZmZkv/M4wHDMzM9wxHDMzMzMzM/uwb5PtUSft6Z7prJ58r+pV0lIpdSorUQokKnGPJkXVDdevm1Wbt9PQ4ldyJEuKMsWJeefTr19JK6ncmKJVvClRNVFTWnbwlEUjnVQCZBCFdPHESdTCT58/p+hg/8jxDtJJu2BqR4h0kkXDSidVAIVX0mXbtlPG1FhPICOddKGdIZ10MfwifVVApxEvCOkUbOmkE3Tld+/fq9o9einHSKfsVRvUuw+fVNcRk9XeQ0cNgHYeOKL1vbPHBZSOT0TSSV9R+vrXb5+p/sBRKnXiBOYgp9Vt2FQi33+kOg4YExjSCUcigNJJqmqz9obXX719rzr2G6nSJEpvlqcCg00fPn+jqrfvZQto3L0nkPxLJ2dIpw8fPlLTDj2sIIPqlq8a53t/fKe69B2o8ibLb4mSVq1a+fYdKx07TRo1hNJJq+ofP36qhq16qkSRYlpDfvrhY7Xz0GHVos8glSlpYQus4ZNnKrPbkH5HJpTSSat/9OypatiypwWSBTbWo/PkaWcW2EQ7j55WOQrWULv2H7QVGOSvTt6nkQ5rj6STzqrfvftAtew7XEWLFtUCW7NOMwX6N2/eqXrtuqpsiQtbDEWJq7fr+gvrIeKADRvppFP68dPn1WxFbimHTNI9CjRRnz59UbMWLVfZUha1AFqnektFyvr79x/VoMkTfQM2gNJJs/pLV2+o6lXqqQQJwlXxghXVuw8f1Lote1SBLJUsQqZOly4d1eev39X0ZRtVhniZ/YZMOLxIJ63qD1y4rCpXqqz2X76phpZrqhKEp1RJwlOrrZduqGqVy6mrt+6qpVsOqzzJSwQCNuLwIp20qr9646bKmjGTOnn9jpqcsaWKESuGypKmmFp8+prKnD6tuvXorZq7Yb/KlbRUIGAjDi/SSevsJUtIcbXz+C115MxxtevoWXX+1kN16MQFdeXmY9V/+GSVMFZCCyAX2PA+7G/ppNX/+u0nqmmbzipSzKgqW9VmKnXKVCpVqiQqduRoKkvGjCpypOhWKEsXr6xAeOPOvbHBRnv8Ip20+g4cN0elStdApUuTTkWLEkXFjh5NJYoaVSVLkFgVL51XxYsfSaVKm15ZwnuX7RQ5Z2ZSp82q0qbLpjJmzaXS5ymn4iTPqBIky6DiJc+s4iTJoGIlTKfiJEmn4iXLoJJmzKWyFCrv0nPvyeuEUDpp9adeulqR8mRRh45eUslTpVMpcmRRpOw5leP0GUXKlkUlz5hZkeJmVsmzZVFZixZW6VNl8Lt0OJLJqXTSCnn38YtKlzqlOnzxhMpcuJjKnDWXSpeviMrUso3KVKCwypyvkMpYoIhKX7iYSl+4mMrUrLWO90gfO02OcCST04jnbHAKdM22PY6nQ1+X797vEyRnEcfpw+w66Yzrp1dvdNvvLF2/7/Tx3jGSafDcVe71dfpoM92wfY+UfrTjdALrx+4jXLZ5Bw0qfiVTssQoUxyfcP8BNCiqK7YzwtUAAAAASUVORK5CYII='">
+          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEfklEQVR4Ae2bBZQjORCGv5mZOcMxhJmZmZkv/M4wHDMzM9wxHDMzMzMzM/uwb5PtUSft6Z7prJ58r+pV0lIpdSorUQokKnGPJkXVDdevm1Wbt9PQ4ldyJEuKMsWJeefTr19JK6ncmKJVvClRNVFTWnbwlEUjnVQCZBCFdPHESdTCT58/p+hg/8jxDtJJu2BqR4h0kkXDSidVAIVX0mXbtlPG1FhPICOddKGdIZ10MfwifVVApxEvCOkUbOmkE3Tld+/fq9o9einHSKfsVRvUuw+fVNcRk9XeQ0cNgHYeOKL1vbPHBZSOT0TSSV9R+vrXb5+p/sBRKnXiBOYgp9Vt2FQi33+kOg4YExjSCUcigNJJqmqz9obXX719rzr2G6nSJEpvlqcCg00fPn+jqrfvZQto3L0nkPxLJ2dIpw8fPlLTDj2sIIPqlq8a53t/fKe69B2o8ibLb4mSVq1a+fYdKx07TRo1hNJJq+ofP36qhq16qkSRYlpDfvrhY7Xz0GHVos8glSlpYQus4ZNnKrPbkH5HJpTSSat/9OypatiypwWSBTbWo/PkaWcW2EQ7j55WOQrWULv2H7QVGOSvTt6nkQ5rj6STzqrfvftAtew7XEWLFtUCW7NOMwX6N2/eqXrtuqpsiQtbDEWJq7fr+gvrIeKADRvppFP68dPn1WxFbimHTNI9CjRRnz59UbMWLVfZUha1AFqnektFyvr79x/VoMkTfQM2gNJJs/pLV2+o6lXqqQQJwlXxghXVuw8f1Lote1SBLJUsQqZOly4d1eev39X0ZRtVhniZ/YZMOLxIJ63qD1y4rCpXqqz2X76phpZrqhKEp1RJwlOrrZduqGqVy6mrt+6qpVsOqzzJSwQCNuLwIp20qr9646bKmjGTOnn9jpqcsaWKESuGypKmmFp8+prKnD6tuvXorZq7Yb/KlbRUIGAjDi/SSevsJUtIcbXz+C115MxxtevoWXX+1kN16MQFdeXmY9V/+GSVMFZCCyAX2PA+7G/ppNX/+u0nqmmbzipSzKgqW9VmKnXKVCpVqiQqduRoKkvGjCpypOhWKEsXr6xAeOPOvbHBRnv8Ip20+g4cN0elStdApUuTTkWLEkXFjh5NJYoaVSVLkFgVL51XxYsfSaVKm15ZwnuX7RQ5Z2ZSp82q0qbLpjJmzaXS5ymn4iTPqBIky6DiJc+s4iTJoGIlTKfiJEmn4iXLoJJmzKWyFCrv0nPvyeuEUDpp9adeulqR8mRRh45eUslTpVMpcmRRpOw5leP0GUXKlkUlz5hZkeJmVsmzZVFZixZW6VNl8Lt0OJLJqXTSCnn38YtKlzqlOnzxhMpcuJjKnDWXSpeviMrUso3KVKCwypyvkMrYoIhKX7iYSl+4mMrUrLWO90gfO02OcCST04jnbHAKdM22PY6nQ1+X797vEyRnEcfpw+w66Yzrp1dvdNvvLF2/7/Tx3jGSafDcVe71dfpoM92wfY+UfrTjdALrx+4jXLZ5Bw0qfiVTssQoUxyfcP8BNCiqK7YzwtUAAAAASUVORK5CYII='">
       </div>
       <div class="icon-text">Galleria immagini e audio</div>
     </div>
   </div>
 
-  <!-- Titolo e sottotitolo della Galleria -->
-  <div id="gallery-title">TAVOLE MIOLOGICHE E STATUE</div>
-  <div id="gallery-subtitle">Tocca le tavole per esplorarle e le statue, per ascoltarne il suono dei muscoli mentre
-    ricoprono le statue.</div>
-
-  <!-- GALLERIA (inizialmente nascosta) -->
-  <div id="gallery"></div>
-
-  <!-- FOOTER CON MINIATURA AVATAR E TESTO -->
-  <footer>
-    <div id="avatar-thumbnail-container">
-      <video id="avatar-thumbnail" playsinline muted>
-        <source src="./video/canovaovale.mp4" type="video/mp4">
-      </video>
-    </div>
-    <div id="back-text">Torna al menu</div>
-  </footer>
-
-  <!-- POPUP IMMAGINE (1..17) -->
+  <!-- POPUP IMMAGINE -->
   <div id="popupOverlay">
     <div id="popupContent">
       <img id="popupImg" src="" alt="Popup Image">
@@ -498,46 +526,33 @@
     </div>
   </div>
 
-  <!-- POPUP VIDEO (STATUE 1..7) -->
+  <!-- POPUP VIDEO -->
   <div id="videoPopupOverlay">
     <div id="videoPopupContent">
       <video id="statueVideo" src="" preload="metadata" playsinline></video>
-      <!-- Controlli testuali: RIascolta e Torna alla Gallery -->
       <div id="videoTextControls">
         <span id="statueReplayText">Riascolta</span>
-        <span id="closeVideoPopupText">Torna alla Gallery</span>
+        <span id="closeVideoPopupText">Torna Indietro</span>
       </div>
     </div>
   </div>
 
   <script>
-    // DEBUG HELPER
-    const debugInfo = document.getElementById('debug-info');
-    function logDebug(message) {
-     // debugInfo.style.display = "block";
-     // debugInfo.innerHTML += message + "<br>";
-     // console.log(message);
-    }
-
-    // Rilevamento dispositivo mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      logDebug("Dispositivo mobile rilevato: " + navigator.userAgent);
-    }
+    // Rileva ambiente locale
+    const isLocalEnvironment = window.location.protocol === 'file:';
 
     // ELEMENTI HTML
     const myVideo = document.getElementById('myVideo');
     const videoContainer = document.getElementById('video-container');
     const restartContainer = document.getElementById('restart-container');
     const galleryThumbnailContainer = document.getElementById('gallery-thumbnail-container');
+    const galleryContainer = document.getElementById('gallery-container');
     const gallery = document.getElementById('gallery');
-    const galleryTitle = document.getElementById('gallery-title');
-    const gallerySubtitle = document.getElementById('gallery-subtitle');
-    const avatarThumbnail = document.getElementById('avatar-thumbnail');
-    const avatarThumbnailContainer = document.getElementById('avatar-thumbnail-container');
-    const backText = document.getElementById('back-text');
+    const videoSlider = document.getElementById('video-slider');
+    const prevButton = document.getElementById('prev-btn');
+    const nextButton = document.getElementById('next-btn');
     const buttonsCont = document.getElementById('buttons-container');
-    const footer = document.querySelector('footer');
+    const backToMenuButton = document.getElementById('back-to-menu-button');
 
     // Popup immagini
     const popupOverlay = document.getElementById('popupOverlay');
@@ -545,72 +560,50 @@
     const closePopupBtn = document.getElementById('closePopupBtn');
     const zoomInstructions = document.getElementById('zoomInstructions');
 
-    // Popup video statue - controlli testuali
+    // Popup video
     const videoPopupOverlay = document.getElementById('videoPopupOverlay');
     const statueVideo = document.getElementById('statueVideo');
     const statueReplayText = document.getElementById('statueReplayText');
     const closeVideoPopupText = document.getElementById('closeVideoPopupText');
 
-    // Verifica disponibilità file
+    // Verifica disponibilità file - versione locale compatibile
     function checkFile(url, callback) {
-      fetch(url, { method: 'HEAD' })
-        .then(response => {
-          if (response.ok) {
-            callback(true);
-          } else {
+      if (isLocalEnvironment) {
+        // In ambiente locale, assumiamo che i file esistano
+        callback(true);
+      } else {
+        // Ambiente web
+        fetch(url, { method: 'HEAD' })
+          .then(response => {
+            if (response.ok) {
+              callback(true);
+            } else {
+              callback(false);
+            }
+          })
+          .catch(() => {
             callback(false);
-            logDebug(`File non trovato: ${url}`);
-          }
-        })
-        .catch(() => {
-          callback(false);
-          logDebug(`Errore nel verificare: ${url}`);
-        });
+          });
+      }
     }
 
-    // Avvio video principale con gestione errori
+    // Avvio video principale
     function initMainVideo() {
-      checkFile('./video/canovaovale.mp4', (exists) => {
-        if (exists) {
-          myVideo.load();
-          document.addEventListener('click', () => {
-            const playPromise = myVideo.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                logDebug("Errore autoplay: " + error);
-                // Aggiungiamo un pulsante play visibile
-                const playButton = document.createElement('div');
-                playButton.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;padding:20px;border-radius:50%;font-size:20px;cursor:pointer;z-index:10;';
-                playButton.innerHTML = '▶';
-                videoContainer.appendChild(playButton);
-                playButton.addEventListener('click', (e) => {
-                  e.stopPropagation();
-                  myVideo.play();
-                  playButton.remove();
-                });
-              });
-            }
-          }, { once: true });
+      myVideo.load();
+      
+      // Gestione click per avviare il video
+      videoContainer.addEventListener('click', () => {
+        if (myVideo.paused) {
+          myVideo.play();
         } else {
-          videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Video non disponibile</div>';
-          logDebug("Video principale non trovato");
+          myVideo.pause();
         }
-      });
+      }, { once: false });
     }
 
     // Avvio all'apertura della pagina
-    document.addEventListener('DOMContentLoaded', initMainVideo);
-
-    // Gestione click sul video
-    videoContainer.addEventListener('click', () => {
-      if (myVideo.paused) {
-        const playPromise = myVideo.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => logDebug("Errore play su click: " + error));
-        }
-      } else {
-        myVideo.pause();
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      initMainVideo();
     });
 
     // Gestione fine video
@@ -622,15 +615,57 @@
     // Riavvio video
     restartContainer.addEventListener('click', () => {
       myVideo.currentTime = 0;
-      const playPromise = myVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => logDebug("Errore riavvio: " + error));
-      }
+      myVideo.play();
     });
 
-    // GESTIONE GALLERIA DINAMICA con fallback
+    // Variabili per lo scorrimento automatico
+    let sliderInterval;
+    let userInteracted = false;
+    let lastInteractionTime = Date.now();
+    const INACTIVITY_TIMEOUT = 5000; // 5 secondi di inattività
+
+    function startSliderAutoScroll() {
+      // Ferma eventuali intervalli precedenti
+      if (sliderInterval) {
+        clearInterval(sliderInterval);
+      }
+      
+      // Avvia nuovo intervallo
+      sliderInterval = setInterval(() => {
+        // Controlla se è passato abbastanza tempo dall'ultima interazione
+        // Controlla se è passato abbastanza tempo dall'ultima interazione
+        if (Date.now() - lastInteractionTime > INACTIVITY_TIMEOUT) {
+          videoSlider.scrollBy({
+            left: 100,
+            behavior: 'smooth'
+          });
+          
+          // Verifica se siamo alla fine e torna all'inizio
+          if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
+            videoSlider.scrollTo({
+              left: 0,
+              behavior: 'smooth'
+            });
+          }
+        }
+      }, 3000);
+    }
+
+    function stopSliderAutoScroll() {
+      if (sliderInterval) {
+        clearInterval(sliderInterval);
+      }
+    }
+
+    // Aggiorna il timestamp dell'ultima interazione
+    function updateInteractionTime() {
+      lastInteractionTime = Date.now();
+    }
+
+    // GESTIONE GALLERIA DINAMICA con fallback migliorato
     function populateGallery() {
       gallery.innerHTML = '';
+      videoSlider.innerHTML = '';
 
       // Aggiungi immagini normali
       for (let i = 1; i <= 17; i++) {
@@ -645,75 +680,134 @@
           this.onerror = null;
           this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${i}</text></svg>`;
           this.parentNode.classList.add('load-error');
-          logDebug(`Immagine ${i} non trovata`);
         };
 
         img.src = imgPath;
         img.alt = `Immagine numero ${i}`;
 
-        img.addEventListener('click', () => openImagePopup(img.src));
+        img.addEventListener('click', () => openImagePopup(imgPath));
         div.appendChild(img);
         gallery.appendChild(div);
       }
 
-      // Aggiungi immagini statue
+      // Aggiungi video allo slider
       for (let i = 1; i <= 7; i++) {
-        const div = document.createElement('div');
-        div.className = 'gallery-item';
+        const slide = document.createElement('div');
+        slide.className = 'video-slide';
+        slide.setAttribute('data-video', `./video/video${i}.mp4`);
 
-        const img = document.createElement('img');
-        const imgPath = `./immagini/statue${i}.jpg`;
-
-        img.onerror = function () {
+        // Crea un'anteprima per il video
+        const thumbnail = document.createElement('img');
+        thumbnail.src = `./immagini/statue${i}.jpg`;
+        thumbnail.onerror = function() {
           this.onerror = null;
-          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Statua ${i}</text></svg>`;
-          this.parentNode.classList.add('load-error');
-          logDebug(`Immagine statua ${i} non trovata`);
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video ${i}</text></svg>`;
         };
-
-        img.src = imgPath;
-        img.alt = `Statua numero ${i}`;
-
-        img.addEventListener('click', () => openStatueVideoPopup(i));
-        div.appendChild(img);
-        gallery.appendChild(div);
+        
+        const title = document.createElement('div');
+        title.className = 'video-title';
+        title.textContent = `Statua ${i}`;
+        
+        slide.appendChild(thumbnail);
+        slide.appendChild(title);
+        
+        // Apri il popup video al click
+        slide.addEventListener('click', function() {
+          openVideoPopup(this.getAttribute('data-video'));
+        });
+        
+        videoSlider.appendChild(slide);
       }
+
+      // Inizializza controlli slider
+      setupSliderControls();
+      
+      // Avvia lo scorrimento automatico
+      startSliderAutoScroll();
+    }
+    
+    // Apertura popup video
+    function openVideoPopup(videoSrc) {
+      statueVideo.src = videoSrc;
+      videoPopupOverlay.style.display = 'flex';
+      statueVideo.load();
+      statueVideo.play();
+    }
+    
+    // Chiusura popup video
+    function closeVideoPopup() {
+      videoPopupOverlay.style.display = 'none';
+      statueVideo.pause();
+      statueVideo.currentTime = 0;
+    }
+    
+    // Configurazione pulsanti navigazione slider
+    function setupSliderControls() {
+      // Rimuovi vecchi listener per evitare duplicati
+      prevButton.removeEventListener('click', scrollLeft);
+      nextButton.removeEventListener('click', scrollRight);
+      videoSlider.removeEventListener('touchstart', updateInteractionTime);
+      videoSlider.removeEventListener('mousedown', updateInteractionTime);
+      videoSlider.removeEventListener('wheel', updateInteractionTime);
+      
+      // Funzioni per lo scorrimento
+      function scrollLeft() {
+        updateInteractionTime();
+        videoSlider.scrollBy({
+          left: -300,
+          behavior: 'smooth'
+        });
+      }
+      
+      function scrollRight() {
+        updateInteractionTime();
+        videoSlider.scrollBy({
+          left: 300,
+          behavior: 'smooth'
+        });
+      }
+      
+      prevButton.addEventListener('click', scrollLeft);
+      nextButton.addEventListener('click', scrollRight);
+      
+      // Aggiorna il timestamp dell'ultima interazione quando l'utente interagisce con lo slider
+      videoSlider.addEventListener('touchstart', updateInteractionTime);
+      videoSlider.addEventListener('mousedown', updateInteractionTime);
+      videoSlider.addEventListener('wheel', updateInteractionTime);
     }
 
-    // Apertura galleria
-    galleryThumbnailContainer.addEventListener('click', () => {
+   // Apertura galleria
+   galleryThumbnailContainer.addEventListener('click', () => {
       myVideo.pause();
       populateGallery();
+      
       // Nascondi il contenitore del video
       videoContainer.style.display = 'none';
-      buttonsCont.style.display = 'none';
-      gallery.style.display = 'grid';
-      galleryTitle.style.display = 'block';
-      gallerySubtitle.style.display = 'block';
-      footer.style.display = 'block';
-
-      // Carica e avvia la miniatura
-      avatarThumbnail.load();
-      const thumbPromise = avatarThumbnail.play();
-      if (thumbPromise !== undefined) {
-        thumbPromise.catch(error => logDebug("Errore thumbnail play: " + error));
-      }
+      
+      // Mostra container della galleria
+      galleryContainer.style.display = 'flex';
+      
+      // Aggiorna lo stato del pulsante galleria
+      galleryThumbnailContainer.style.opacity = "0.5";
+      restartContainer.style.opacity = "1";
     });
 
     // Ritorno al menu principale
     function backToMain() {
-      gallery.style.display = 'none';
-      galleryTitle.style.display = 'none';
-      gallerySubtitle.style.display = 'none';
-      footer.style.display = 'none';
+      // Ferma lo scorrimento automatico
+      stopSliderAutoScroll();
+      
+      // Nascondi galleria
+      galleryContainer.style.display = 'none';
+      
       // Mostra di nuovo il contenitore del video
       videoContainer.style.display = 'flex';
-      buttonsCont.style.display = 'flex';
-      avatarThumbnail.pause();
+      
+      // Reimposta l'opacità dei pulsanti
+      galleryThumbnailContainer.style.opacity = "1";
     }
 
-    avatarThumbnailContainer.addEventListener('click', backToMain);
-    backText.addEventListener('click', backToMain);
+    backToMenuButton.addEventListener('click', backToMain);
 
     // Variabili per pinch & rotate (popup immagini)
     let currentScale = 1;
@@ -729,7 +823,6 @@
       popupImg.onerror = function () {
         this.onerror = null;
         this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
-        logDebug(`Errore caricamento popup immagine: ${src}`);
       };
 
       popupImg.src = src;
@@ -810,58 +903,13 @@
     popupImg.addEventListener('pointerup', onPointerUpOrCancel);
     popupImg.addEventListener('pointercancel', onPointerUpOrCancel);
 
-    // POPUP VIDEO STATUE con gestione errori
-    function openStatueVideoPopup(index) {
-      const videoPath = `./video/video${index}.mp4`;
-
-      // Verifica disponibilità video
-      checkFile(videoPath, (exists) => {
-        if (exists) {
-          statueVideo.src = videoPath;
-          videoPopupOverlay.style.display = 'flex';
-
-          // Carica e avvia video con gestione errori
-          statueVideo.load();
-          const videoPromise = statueVideo.play();
-          if (videoPromise !== undefined) {
-            videoPromise.catch(error => {
-              logDebug(`Errore avvio video statua ${index}: ${error}`);
-
-              // Aggiungi pulsante play se autoplay fallisce
-              const playButton = document.createElement('div');
-              playButton.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);color:white;padding:20px;border-radius:50%;font-size:20px;cursor:pointer;z-index:10;';
-              playButton.innerHTML = '▶';
-              videoPopupContent.appendChild(playButton);
-              playButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                statueVideo.play();
-                playButton.remove();
-              });
-            });
-          }
-        } else {
-          logDebug(`Video statua ${index} non trovato`);
-          alert(`Video della statua ${index} non disponibile`);
-        }
-      });
-    }
-
-    function closeStatueVideoPopup() {
-      videoPopupOverlay.style.display = 'none';
-      statueVideo.pause();
-      statueVideo.currentTime = 0;
-    }
-
-    // Controlli testuali per il video delle statue
+    // Controlli video popup
     statueReplayText.addEventListener('click', () => {
       statueVideo.currentTime = 0;
-      const replayPromise = statueVideo.play();
-      if (replayPromise !== undefined) {
-        replayPromise.catch(error => logDebug("Errore replay: " + error));
-      }
+      statueVideo.play();
     });
-
-    closeVideoPopupText.addEventListener('click', closeStatueVideoPopup);
+    
+    closeVideoPopupText.addEventListener('click', closeVideoPopup);
 
     // Chiusura popup su click all'esterno
     popupOverlay.addEventListener('click', e => {
@@ -869,31 +917,25 @@
     });
 
     videoPopupOverlay.addEventListener('click', e => {
-      if (e.target === videoPopupOverlay) closeStatueVideoPopup();
+      if (e.target === videoPopupOverlay) closeVideoPopup();
     });
 
     // Gestione errori per il video principale
     myVideo.addEventListener('error', function () {
-      logDebug("Errore caricamento video principale: " + (myVideo.error ? myVideo.error.message : "Sconosciuto"));
-      videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Video non disponibile. Tocca per riprovare.</div>';
-      videoContainer.addEventListener('click', initMainVideo);
+      videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;"><p>Video non disponibile.</p><p>Tocca per riprovare</p></div>';
+      videoContainer.addEventListener('click', () => {
+        videoContainer.innerHTML = '<video id="myVideo" playsinline><source src="./video/canovaovale.mp4" type="video/mp4">Il tuo browser non supporta il tag video.</video>';
+        myVideo = document.getElementById('myVideo');
+        initMainVideo();
+      });
     });
 
     // Controllo online/offline per dispositivi mobili
     window.addEventListener('online', function () {
-      logDebug('Dispositivo online - ricaricamento risorse');
-      initMainVideo();
+      if (myVideo.paused && myVideo.error) {
+        initMainVideo();
+      }
     });
-
-    window.addEventListener('offline', function () {
-      logDebug('Dispositivo offline - possibili problemi di caricamento');
-    });
-
-    // Per debug - mostra informazioni sui percorsi
-    if (isMobile) {
-      logDebug("Percorso assoluto video: " + new URL('./video/canovaovale.mp4', window.location.href).href);
-      logDebug("Percorso assoluto icona: " + new URL('./icona.png', window.location.href).href);
-    }
   </script>
 </body>
 
