@@ -22,6 +22,20 @@
       z-index: 0;
       overflow-x: hidden;
     }
+    #main-title {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 3rem;
+      font-weight: bold;
+      text-align: center;
+      z-index: 10;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+      font-family: 'Rock Salt', cursive, sans-serif;
+      padding: 10px 20px;
+    }
 
     /* Sfondo fisso con overlay scuro */
     body::before {
@@ -416,6 +430,7 @@
 </head>
 
 <body>
+  <h1 id="main-title">CANOVA EXPERIENCE</h1>
   <!-- DEBUG INFO -->
   <div id="debug-info" class="debug-info"></div>
 
