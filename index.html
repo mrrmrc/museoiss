@@ -110,34 +110,41 @@
     #gallery-container {
       display: none;
       flex-direction: column;
-      flex: 1;
-      overflow: hidden;
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 100px; /* Lascia spazio per i pulsanti in basso */
+      bottom: 0;
       z-index: 5;
+      height: 100vh;
     }
 
-    /* Galleria dinamica */
+    /* Galleria dinamica - utilizzo ottimizzato dello spazio */
     #gallery {
       width: 100%;
+      flex: 1;
       background-color: rgba(17, 17, 17, 0.9);
-      padding: 10px;
+      padding: 5px;
+      /* Ridotto il padding */
       box-sizing: border-box;
       overflow-y: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      grid-gap: 10px;
-      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      /* Dimensione ridotta */
+      grid-gap: 5px;
+      /* Spazio ridotto tra le immagini */
+      justify-content: center;
+      /* Centramento orizzontale */
+      align-content: start;
+      /* Allineamento verticale in alto */
       z-index: 2;
-      flex: 1;
+      margin-bottom: 0;
     }
 
     .gallery-item {
       width: 100%;
-      max-width: 400px;
+      aspect-ratio: 1/1;
+      /* Rapporto quadrato per uniformità */
       background-color: #222;
       overflow: hidden;
       cursor: pointer;
@@ -146,7 +153,7 @@
 
     .gallery-item img {
       width: 100%;
-      height: auto;
+      height: 100%;
       display: block;
       object-fit: cover;
     }
@@ -164,14 +171,17 @@
 
     #video-slider {
       display: flex;
-      overflow: hidden; /* Nasconde le barre di scorrimento */
+      overflow-x: auto;
+      /* Permette lo scorrimento orizzontale */
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       scroll-snap-type: x mandatory;
       padding: 0 15px;
       height: 100%;
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* IE and Edge */
     }
 
     /* Nasconde la scrollbar per Chrome, Safari e Opera */
@@ -204,48 +214,27 @@
       color: white;
       font-size: 0.9rem;
       font-weight: bold;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
     }
 
-    .slider-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 40px;
-      height: 40px;
-      background: rgba(0, 123, 255, 0.7);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 3;
+    /* Footer della galleria per il pulsante di ritorno */
+    #gallery-footer {
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 15px 0;
+      text-align: center;
+      z-index: 10;
     }
 
-    #prev-btn {
-      left: 10px;
-    }
-
-    #next-btn {
-      right: 10px;
-    }
-
-    /* Pulsante per tornare al menu */
     #back-to-menu-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 10px 15px;
+      padding: 10px 20px;
       background-color: rgba(0, 123, 255, 0.7);
       color: white;
       border: none;
       border-radius: 5px;
       font-size: 1rem;
       cursor: pointer;
-      z-index: 10;
+      font-weight: bold;
     }
 
     /* Popup immagini */
@@ -394,13 +383,9 @@
       }
 
       #gallery {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       }
-      
-      #gallery-container {
-        bottom: 85px;
-      }
-      
+
       .video-slide {
         width: 200px;
       }
@@ -427,12 +412,8 @@
       }
 
       #gallery {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        padding: 10px;
-      }
-      
-      #gallery-container {
-        bottom: 75px;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        padding: 5px;
       }
 
       /* Per assicurarsi che tutto sia visibile su schermi piccoli */
@@ -441,15 +422,15 @@
         font-size: 0.8rem;
         padding: 5px 10px;
       }
-      
+
       .video-slide {
         width: 180px;
       }
-      
+
       .video-title {
         font-size: 0.8rem;
       }
-      
+
       #back-to-menu-button {
         font-size: 0.8rem;
         padding: 8px 12px;
@@ -474,17 +455,17 @@
 
   <!-- Container per galleria e relativi elementi -->
   <div id="gallery-container">
-    <!-- Pulsante per tornare al menu principale -->
-    <button id="back-to-menu-button">Torna al Menu</button>
-    
     <!-- GALLERIA IMMAGINI -->
     <div id="gallery"></div>
-    
+
     <!-- GALLERIA VIDEO SLIDER -->
     <div id="video-slider-container">
-      <button class="slider-nav" id="prev-btn">&lt;</button>
       <div id="video-slider"></div>
-      <button class="slider-nav" id="next-btn">&gt;</button>
+    </div>
+
+    <!-- Footer con pulsante per tornare al menu principale -->
+    <div id="gallery-footer">
+      <button id="back-to-menu-button">Torna al Menu</button>
     </div>
   </div>
 
@@ -502,7 +483,7 @@
     <div class="icon-container" id="gallery-thumbnail-container">
       <div class="icon-wrapper">
         <img src="./galleria.png" alt="Anteprima galleria"
-          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEfklEQVR4Ae2bBZQjORCGv5mZOcMxhJmZmZkv/M4wHDMzM9wxHDMzMzMzM/uwb5PtUSft6Z7prJ58r+pV0lIpdSorUQokKnGPJkXVDdevm1Wbt9PQ4ldyJEuKMsWJeefTr19JK6ncmKJVvClRNVFTWnbwlEUjnVQCZBCFdPHESdTCT58/p+hg/8jxDtJJu2BqR4h0kkXDSidVAIVX0mXbtlPG1FhPICOddKGdIZ10MfwifVVApxEvCOkUbOmkE3Tld+/fq9o9einHSKfsVRvUuw+fVNcRk9XeQ0cNgHYeOKL1vbPHBZSOT0TSSV9R+vrXb5+p/sBRKnXiBOYgp9Vt2FQi33+kOg4YExjSCUcigNJJqmqz9obXX719rzr2G6nSJEpvlqcCg00fPn+jqrfvZQto3L0nkPxLJ2dIpw8fPlLTDj2sIIPqlq8a53t/fKe69B2o8ibLb4mSVq1a+fYdKx07TRo1hNJJq+ofP36qhq16qkSRYlpDfvrhY7Xz0GHVos8glSlpYQus4ZNnKrPbkH5HJpTSSat/9OypatiypwWSBTbWo/PkaWcW2EQ7j55WOQrWULv2H7QVGOSvTt6nkQ5rj6STzqrfvftAtew7XEWLFtUCW7NOMwX6N2/eqXrtuqpsiQtbDEWJq7fr+gvrIeKADRvppFP68dPn1WxFbimHTNI9CjRRnz59UbMWLVfZUha1AFqnektFyvr79x/VoMkTfQM2gNJJs/pLV2+o6lXqqQQJwlXxghXVuw8f1Lote1SBLJUsQqZOly4d1eev39X0ZRtVhniZ/YZMOLxIJ63qD1y4rCpXqqz2X76phpZrqhKEp1RJwlOrrZduqGqVy6mrt+6qpVsOqzzJSwQCNuLwIp20qr9646bKmjGTOnn9jpqcsaWKESuGypKmmFp8+prKnD6tuvXorZq7Yb/KlbRUIGAjDi/SSevsJUtIcbXz+C115MxxtevoWXX+1kN16MQFdeXmY9V/+GSVMFZCCyAX2PA+7G/ppNX/+u0nqmmbzipSzKgqW9VmKnXKVCpVqiQqduRoKkvGjCpypOhWKEsXr6xAeOPOvbHBRnv8Ip20+g4cN0elStdApUuTTkWLEkXFjh5NJYoaVSVLkFgVL51XxYsfSaVKm15ZwnuX7RQ5Z2ZSp82q0qbLpjJmzaXS5ymn4iTPqBIky6DiJc+s4iTJoGIlTKfiJEmn4iXLoJJmzKWyFCrv0nPvyeuEUDpp9adeulqR8mRRh45eUslTpVMpcmRRpOw5leP0GUXKlkUlz5hZkeJmVsmzZVFZixZW6VNl8Lt0OJLJqXTSCnn38YtKlzqlOnzxhMpcuJjKnDWXSpeviMrUso3KVKCwypyvkMrYoIhKX7iYSl+4mMrUrLWO90gfO02OcCST04jnbHAKdM22PY6nQ1+X797vEyRnEcfpw+w66Yzrp1dvdNvvLF2/7/Tx3jGSafDcVe71dfpoM92wfY+UfrTjdALrx+4jXLZ5Bw0qfiVTssQoUxyfcP8BNCiqK7YzwtUAAAAASUVORK5CYII='">
+          onerror="this.onerror=null; this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAAA8CAYAAADmBa1FAAAEfklEQVR4Ae2bBZQjORCGv5mZOcMxhJmZmZkv/M4wHDMzM9wxHDMzMzMzM/uwb5PtUSft6Z7prJ58r+pV0lIpdSorUQokKnGPJkXVDdevm1Wbt9PQ4ldyJEuKMsWJeefTr19JK6ncmKJVvClRNVFTWnbwlEUjnVQCZBCFdPHESdTCT58/p+hg/8jxDtJJu2BqR4h0kkXDSidVAIVX0mXbtlPG1FhPICOddKGdIZ10MfwifVVApxEvCOkUbOmkE3Tld+/fq9o9einHSKfsVRvUuw+fVNcRk9XeQ0cNgHYeOKL1vbPHBZSOT0TSSV9R+vrXb5+p/sBRKnXiBOYgp9Vt2FQi33+kOg4YExjSCUcigNJJqmqz9obXX719rzr2G6nSJEpvlqcCg00fPn+jqrfvZQto3L0nkPxLJ2dIpw8fPlLTDj2sIIPqlq8a53t/fKe69B2o8ibLb4mSVq1a+fYdKx07TRo1hNJJq+ofP36qhq16qkSRYlpDfvrhY7Xz0GHVos8glSlpYQus4ZNnKrPbkH5HJpTSSat/9OypatiypwWSBTbWo/PkaWcW2EQ7j55WOQrWULv2H7QVGOSvTt6nkQ5rj6STzqrfvftAtew7XEWLFtUCW7NOMwX6N2/eqXrtuqpsiQtbDEWJq7fr+gvrIeKADRvppFP68dPn1WxFbimHTNI9CjRRnz59UbMWLVfZUha1AFqnektFyvr79x/VoMkTfQM2gNJJs/pLV2+o6lXqqQQJwlXxghXVuw8f1Lote1SBLJUsQqZOly4d1eev39X0ZRtVhniZ/YZMOLxIJ63qD1y4rCpXqqz2X76phpZrqhKEp1RJwlOrrZduqGqVy6mrt+6qpVsOqzzJSwQCNuLwIp20qr9646bKmjGTOnn9jpqcsaWKESuGypKmmFp8+prKnD6tuvXorZq7Yb/KlbRUIGAjDi/SSevsJUtIcbXz+C115MxxtevoWXX+1kN16MQFdeXmY9V/+GSVMFZCCyAX2PA+7G/ppNX/+u0nqmmbzipSzKgqW9VmKnXKVCpVqiQqduRoKkvGjCpypOhWKEsXr6xAeOPOvbHBRnv8Ip20+g4cN0elStdApUuTTkWLEkXFjh5NJYoaVSVLkFgVL51XxYsfSaVKm15ZwnuX7RQ5Z2ZSp82q0qbLpjJmzaXS5ymn4iTPqBIky6DiJc+s4iTJoGIlTKfiJEmn4iXLoJJmzKWyFCrv0nPvyeuEUDpp9adeulqR8mRRh45eUslTpVMpcmRRpOw5leP0GUXKlkUlz5hZkeJmVsmzZVFZixZW6VNl8Lt0OJLJqXTSCnn38YtKlzqlOnzxhMpcuJjKnDWXSpeviMrUso3KVKCwypyvkMrYoIhKX7iYSl+4mMrUtLWO90gfO02OcCST04jnbHAKdM22PY6nQ1+X797vEyRnEcfpw+w66Yzrp1dvdNvvLF2/7/Tx3jGSafDcVe71dfpoM92wfY+UfrTjdALrx+4jXLZ5Bw0qfiVTssQoUxyfcP8BNCiqK7YzwtUAAAAASUVORK5CYII='">
       </div>
       <div class="icon-text">Galleria immagini e audio</div>
     </div>
@@ -549,8 +530,6 @@
     const galleryContainer = document.getElementById('gallery-container');
     const gallery = document.getElementById('gallery');
     const videoSlider = document.getElementById('video-slider');
-    const prevButton = document.getElementById('prev-btn');
-    const nextButton = document.getElementById('next-btn');
     const buttonsCont = document.getElementById('buttons-container');
     const backToMenuButton = document.getElementById('back-to-menu-button');
 
@@ -590,7 +569,7 @@
     // Avvio video principale
     function initMainVideo() {
       myVideo.load();
-      
+
       // Gestione click per avviare il video
       videoContainer.addEventListener('click', () => {
         if (myVideo.paused) {
@@ -629,17 +608,16 @@
       if (sliderInterval) {
         clearInterval(sliderInterval);
       }
-      
+
       // Avvia nuovo intervallo
       sliderInterval = setInterval(() => {
-        // Controlla se è passato abbastanza tempo dall'ultima interazione
         // Controlla se è passato abbastanza tempo dall'ultima interazione
         if (Date.now() - lastInteractionTime > INACTIVITY_TIMEOUT) {
           videoSlider.scrollBy({
             left: 100,
             behavior: 'smooth'
           });
-          
+
           // Verifica se siamo alla fine e torna all'inizio
           if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
             videoSlider.scrollTo({
@@ -662,10 +640,41 @@
       lastInteractionTime = Date.now();
     }
 
+    // Gestione touch per lo slider
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isDragging = false;
+
+    function setupSliderTouchEvents() {
+      videoSlider.addEventListener('touchstart', function (e) {
+        touchStartX = e.changedTouches[0].screenX;
+        isDragging = true;
+        updateInteractionTime(); // Aggiorna timestamp interazione
+      }, { passive: true });
+
+      videoSlider.addEventListener('touchmove', function (e) {
+        if (!isDragging) return;
+        updateInteractionTime(); // Aggiorna timestamp interazione
+        touchEndX = e.changedTouches[0].screenX;
+        const scrollX = touchStartX - touchEndX;
+        videoSlider.scrollLeft += scrollX;
+        touchStartX = touchEndX;
+      }, { passive: true });
+
+      videoSlider.addEventListener('touchend', function () {
+        isDragging = false;
+      }, { passive: true });
+    }
+
     // GESTIONE GALLERIA DINAMICA con fallback migliorato
     function populateGallery() {
       gallery.innerHTML = '';
       videoSlider.innerHTML = '';
+
+      // Calcola dinamicamente quante immagini per riga in base alla larghezza
+      const galleryWidth = gallery.clientWidth;
+      const imgSize = 120; // Dimensione base delle miniature
+      const gap = 5; // Spazio tra le immagini (deve corrispondere al grid-gap)
 
       // Aggiungi immagini normali
       for (let i = 1; i <= 17; i++) {
@@ -684,6 +693,7 @@
 
         img.src = imgPath;
         img.alt = `Immagine numero ${i}`;
+        img.loading = "lazy"; // Aggiunge lazy loading per migliorare le prestazioni
 
         img.addEventListener('click', () => openImagePopup(imgPath));
         div.appendChild(img);
@@ -699,33 +709,36 @@
         // Crea un'anteprima per il video
         const thumbnail = document.createElement('img');
         thumbnail.src = `./immagini/statue${i}.jpg`;
-        thumbnail.onerror = function() {
+        thumbnail.onerror = function () {
           this.onerror = null;
           this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video ${i}</text></svg>`;
         };
-        
+
         const title = document.createElement('div');
         title.className = 'video-title';
         title.textContent = `Statua ${i}`;
-        
+
         slide.appendChild(thumbnail);
         slide.appendChild(title);
-        
-        // Apri il popup video al click
-        slide.addEventListener('click', function() {
+
+        // Implementazione click singolo invece di doppio click
+        slide.addEventListener('click', function () {
           openVideoPopup(this.getAttribute('data-video'));
         });
-        
+
         videoSlider.appendChild(slide);
       }
 
-      // Inizializza controlli slider
-      setupSliderControls();
-      
+      // Aggiungi evento scroll al video slider per aggiornare l'interazione
+      videoSlider.addEventListener('scroll', updateInteractionTime);
+
+      // Configura eventi touch per lo slider
+      setupSliderTouchEvents();
+
       // Avvia lo scorrimento automatico
       startSliderAutoScroll();
     }
-    
+
     // Apertura popup video
     function openVideoPopup(videoSrc) {
       statueVideo.src = videoSrc;
@@ -733,60 +746,25 @@
       statueVideo.load();
       statueVideo.play();
     }
-    
+
     // Chiusura popup video
     function closeVideoPopup() {
       videoPopupOverlay.style.display = 'none';
       statueVideo.pause();
       statueVideo.currentTime = 0;
     }
-    
-    // Configurazione pulsanti navigazione slider
-    function setupSliderControls() {
-      // Rimuovi vecchi listener per evitare duplicati
-      prevButton.removeEventListener('click', scrollLeft);
-      nextButton.removeEventListener('click', scrollRight);
-      videoSlider.removeEventListener('touchstart', updateInteractionTime);
-      videoSlider.removeEventListener('mousedown', updateInteractionTime);
-      videoSlider.removeEventListener('wheel', updateInteractionTime);
-      
-      // Funzioni per lo scorrimento
-      function scrollLeft() {
-        updateInteractionTime();
-        videoSlider.scrollBy({
-          left: -300,
-          behavior: 'smooth'
-        });
-      }
-      
-      function scrollRight() {
-        updateInteractionTime();
-        videoSlider.scrollBy({
-          left: 300,
-          behavior: 'smooth'
-        });
-      }
-      
-      prevButton.addEventListener('click', scrollLeft);
-      nextButton.addEventListener('click', scrollRight);
-      
-      // Aggiorna il timestamp dell'ultima interazione quando l'utente interagisce con lo slider
-      videoSlider.addEventListener('touchstart', updateInteractionTime);
-      videoSlider.addEventListener('mousedown', updateInteractionTime);
-      videoSlider.addEventListener('wheel', updateInteractionTime);
-    }
 
-   // Apertura galleria
-   galleryThumbnailContainer.addEventListener('click', () => {
+    // Apertura galleria
+    galleryThumbnailContainer.addEventListener('click', () => {
       myVideo.pause();
       populateGallery();
-      
+
       // Nascondi il contenitore del video
       videoContainer.style.display = 'none';
-      
+
       // Mostra container della galleria
       galleryContainer.style.display = 'flex';
-      
+
       // Aggiorna lo stato del pulsante galleria
       galleryThumbnailContainer.style.opacity = "0.5";
       restartContainer.style.opacity = "1";
@@ -796,13 +774,13 @@
     function backToMain() {
       // Ferma lo scorrimento automatico
       stopSliderAutoScroll();
-      
+
       // Nascondi galleria
       galleryContainer.style.display = 'none';
-      
+
       // Mostra di nuovo il contenitore del video
       videoContainer.style.display = 'flex';
-      
+
       // Reimposta l'opacità dei pulsanti
       galleryThumbnailContainer.style.opacity = "1";
     }
@@ -908,7 +886,7 @@
       statueVideo.currentTime = 0;
       statueVideo.play();
     });
-    
+
     closeVideoPopupText.addEventListener('click', closeVideoPopup);
 
     // Chiusura popup su click all'esterno
