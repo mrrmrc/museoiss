@@ -375,6 +375,99 @@
       border-radius: 4px;
     }
 
+    /* Pannello impostazioni */
+    #settings-panel {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid #007BFF;
+      border-radius: 8px;
+      padding: 20px;
+      z-index: 999999;
+      width: 80%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      color: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    #settings-panel h2 {
+      margin-top: 0;
+      border-bottom: 1px solid #007BFF;
+      padding-bottom: 10px;
+    }
+
+    #settings-panel h3 {
+      margin-top: 15px;
+      margin-bottom: 10px;
+    }
+
+    .settings-group {
+      margin-bottom: 20px;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .settings-item {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .settings-item label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .settings-item input[type="range"] {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .settings-item select {
+      width: 100%;
+      padding: 5px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .settings-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #444;
+      padding-top: 15px;
+    }
+
+    .settings-button {
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .settings-button.primary {
+      background: #007BFF;
+    }
+
+    .settings-button.secondary {
+      background: #333;
+    }
+
+    .settings-button.tertiary {
+      background: #555;
+    }
+
     /* Stili specifici per tablet */
     @media (max-width: 1024px) {
       .icon-wrapper {
@@ -434,6 +527,15 @@
       #back-to-menu-button {
         font-size: 0.8rem;
         padding: 8px 12px;
+      }
+
+      #settings-panel {
+        width: 95%;
+        max-height: 95vh;
+      }
+
+      .settings-item {
+        min-width: 100%;
       }
     }
 
@@ -518,6 +620,76 @@
     </div>
   </div>
 
+  <!-- PANNELLO IMPOSTAZIONI -->
+  <div id="settings-panel">
+    <h2>Impostazioni Layout Galleria</h2>
+
+    <div class="settings-group">
+      <h3>Impostazioni Griglia</h3>
+      <div class="settings-row">
+        <div class="settings-item">
+          <label for="min-image-width">Larghezza minima immagini (px):</label>
+          <input type="range" id="min-image-width" min="50" max="200" step="5" value="120">
+          <span id="min-image-width-value">120px</span>
+        </div>
+
+        <div class="settings-item">
+          <label for="grid-gap">Spazio tra immagini (px):</label>
+          <input type="range" id="grid-gap" min="1" max="20" step="1" value="5">
+          <span id="grid-gap-value">5px</span>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-item">
+          <label for="gallery-padding">Padding galleria (px):</label>
+          <input type="range" id="gallery-padding" min="0" max="20" step="1" value="5">
+          <span id="gallery-padding-value">5px</span>
+        </div>
+
+        <div class="settings-item">
+          <label for="aspect-ratio">Rapporto larghezza/altezza:</label>
+          <select id="aspect-ratio">
+            <option value="1/1" selected>1:1 (Quadrato)</option>
+            <option value="4/3">4:3 (Standard)</option>
+            <option value="16/9">16:9 (Widescreen)</option>
+            <option value="3/4">3:4 (Verticale)</option>
+            <option value="custom">Personalizzato</option>
+          </select>
+          <div id="custom-ratio-container" style="display: none; margin-top: 5px;">
+            <input type="text" id="custom-ratio" placeholder="es: 2/1"
+              style="width: 100%; padding: 5px; background: #333; color: white; border: 1px solid #555;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3>Impostazioni Slider Video</h3>
+      <div class="settings-row">
+        <div class="settings-item">
+          <label for="slide-width">Larghezza slide (px):</label>
+          <input type="range" id="slide-width" min="150" max="350" step="10" value="250">
+          <span id="slide-width-value">250px</span>
+        </div>
+
+        <div class="settings-item">
+          <label for="slide-gap">Spazio tra slide (px):</label>
+          <input type="range" id="slide-gap" min="5" max="30" step="1" value="15">
+          <span id="slide-gap-value">15px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-footer">
+      <button id="reset-settings" class="settings-button tertiary">Ripristina Default</button>
+      <div>
+        <button id="save-settings" class="settings-button primary">Salva</button>
+        <button id="close-settings" class="settings-button secondary">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Rileva ambiente locale
     const isLocalEnvironment = window.location.protocol === 'file:';
@@ -544,6 +716,36 @@
     const statueVideo = document.getElementById('statueVideo');
     const statueReplayText = document.getElementById('statueReplayText');
     const closeVideoPopupText = document.getElementById('closeVideoPopupText');
+
+    // Pannello impostazioni
+    const settingsPanel = document.getElementById('settings-panel');
+    const minImageWidthInput = document.getElementById('min-image-width');
+    const minImageWidthValue = document.getElementById('min-image-width-value');
+    const gridGapInput = document.getElementById('grid-gap');
+    const gridGapValue = document.getElementById('grid-gap-value');
+    const galleryPaddingInput = document.getElementById('gallery-padding');
+    const galleryPaddingValue = document.getElementById('gallery-padding-value');
+    const aspectRatioSelect = document.getElementById('aspect-ratio');
+    const customRatioContainer = document.getElementById('custom-ratio-container');
+    const customRatioInput = document.getElementById('custom-ratio');
+    const slideWidthInput = document.getElementById('slide-width');
+    const slideWidthValue = document.getElementById('slide-width-value');
+    const slideGapInput = document.getElementById('slide-gap');
+    const slideGapValue = document.getElementById('slide-gap-value');
+    const resetSettingsBtn = document.getElementById('reset-settings');
+    const saveSettingsBtn = document.getElementById('save-settings');
+    const closeSettingsBtn = document.getElementById('close-settings');
+
+    // Configurazione impostazioni
+    let gallerySettings = {
+      minImageWidth: 120,
+      gridGap: 5,
+      galleryPadding: 5,
+      aspectRatio: "1/1",
+      customRatio: "",
+      slideWidth: 250,
+      slideGap: 15
+    };
 
     // Verifica disponibilità file - versione locale compatibile
     function checkFile(url, callback) {
@@ -581,7 +783,8 @@
     }
 
     // Avvio all'apertura della pagina
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadSettings();
       initMainVideo();
     });
 
@@ -671,11 +874,6 @@
       gallery.innerHTML = '';
       videoSlider.innerHTML = '';
 
-      // Calcola dinamicamente quante immagini per riga in base alla larghezza
-      const galleryWidth = gallery.clientWidth;
-      const imgSize = 120; // Dimensione base delle miniature
-      const gap = 5; // Spazio tra le immagini (deve corrispondere al grid-gap)
-
       // Aggiungi immagini normali
       for (let i = 1; i <= 17; i++) {
         const div = document.createElement('div');
@@ -737,6 +935,9 @@
 
       // Avvia lo scorrimento automatico
       startSliderAutoScroll();
+
+      // Applica le impostazioni alla galleria
+      applySettings();
     }
 
     // Apertura popup video
@@ -912,6 +1113,196 @@
     window.addEventListener('online', function () {
       if (myVideo.paused && myVideo.error) {
         initMainVideo();
+      }
+    });
+
+    // FUNZIONI IMPOSTAZIONI
+
+    // Funzione per aggiornare l'interfaccia del pannello con le impostazioni correnti
+    function updateSettingsUI() {
+      minImageWidthInput.value = gallerySettings.minImageWidth;
+      minImageWidthValue.textContent = `${gallerySettings.minImageWidth}px`;
+
+      gridGapInput.value = gallerySettings.gridGap;
+      gridGapValue.textContent = `${gallerySettings.gridGap}px`;
+
+      galleryPaddingInput.value = gallerySettings.galleryPadding;
+      galleryPaddingValue.textContent = `${gallerySettings.galleryPadding}px`;
+
+      aspectRatioSelect.value = gallerySettings.aspectRatio;
+
+      if (gallerySettings.aspectRatio === 'custom') {
+        customRatioContainer.style.display = 'block';
+        customRatioInput.value = gallerySettings.customRatio;
+      } else {
+        customRatioContainer.style.display = 'none';
+      }
+
+      slideWidthInput.value = gallerySettings.slideWidth;
+      slideWidthValue.textContent = `${gallerySettings.slideWidth}px`;
+
+      slideGapInput.value = gallerySettings.slideGap;
+      slideGapValue.textContent = `${gallerySettings.slideGap}px`;
+    }
+
+    // Funzione per applicare le impostazioni alla galleria
+    function applySettings() {
+      // Applica le impostazioni alla griglia
+      gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gallerySettings.minImageWidth}px, 1fr))`;
+      gallery.style.gridGap = `${gallerySettings.gridGap}px`;
+      gallery.style.padding = `${gallerySettings.galleryPadding}px`;
+
+      // Trova e aggiorna tutti gli elementi gallery-item
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      let aspectRatioValue = gallerySettings.aspectRatio;
+
+      if (aspectRatioValue === 'custom' && gallerySettings.customRatio) {
+        aspectRatioValue = gallerySettings.customRatio;
+      }
+
+      galleryItems.forEach(item => {
+        item.style.aspectRatio = aspectRatioValue;
+      });
+
+      // Applica le impostazioni allo slider
+      const videoSlides = document.querySelectorAll('.video-slide');
+      videoSlides.forEach(slide => {
+        slide.style.width = `${gallerySettings.slideWidth}px`;
+        slide.style.marginRight = `${gallerySettings.slideGap}px`;
+      });
+    }
+
+    // Carica le impostazioni dal localStorage o dal file settings.json
+    async function loadSettings() {
+      try {
+        // Prima prova da localStorage per testing
+        const storedSettings = localStorage.getItem('gallerySettings');
+
+        if (storedSettings) {
+          gallerySettings = JSON.parse(storedSettings);
+          updateSettingsUI();
+          return;
+        }
+
+        // Se non è disponibile nel localStorage, prova a caricare dal file
+        if (isLocalEnvironment) {
+          try {
+            const response = await fetch('./settings.json');
+            if (response.ok) {
+              const settings = await response.json();
+              gallerySettings = settings;
+              updateSettingsUI();
+            }
+          } catch (e) {
+            console.log('Nessun file settings.json trovato, utilizzo impostazioni predefinite');
+          }
+        }
+      } catch (error) {
+        console.error('Errore nel caricamento delle impostazioni:', error);
+      }
+    }
+
+    // Salva le impostazioni in localStorage e nel file settings.json
+    function saveSettings() {
+      try {
+        // Salva in localStorage per testing
+        localStorage.setItem('gallerySettings', JSON.stringify(gallerySettings));
+
+        // In una vera applicazione desktop con Electron o simili,
+        // qui potresti usare l'API di Node.js per salvare su file
+
+        // Per ora mostriamo un messaggio informativo
+        alert('Impostazioni salvate in localStorage. \n\nIn un ambiente desktop con accesso file, le impostazioni sarebbero salvate anche in settings.json.');
+
+        // Chiudi il pannello dopo il salvataggio
+        toggleSettingsPanel(false);
+      } catch (error) {
+        console.error('Errore nel salvataggio delle impostazioni:', error);
+        alert('Si è verificato un errore durante il salvataggio delle impostazioni.');
+      }
+    }
+
+    // Ripristina le impostazioni predefinite
+    function resetSettings() {
+      gallerySettings = {
+        minImageWidth: 120,
+        gridGap: 5,
+        galleryPadding: 5,
+        aspectRatio: "1/1",
+        customRatio: "",
+        slideWidth: 250,
+        slideGap: 15
+      };
+
+      updateSettingsUI();
+      applySettings();
+    }
+
+    // Mostra/nascondi il pannello impostazioni
+    function toggleSettingsPanel(show) {
+      settingsPanel.style.display = show ? 'block' : 'none';
+
+      // Se il pannello è aperto, aggiorna subito l'UI
+      if (show) {
+        updateSettingsUI();
+      }
+    }
+
+    // Gestisci il cambiamento del rapporto d'aspetto
+    aspectRatioSelect.addEventListener('change', function () {
+      const isCustom = this.value === 'custom';
+      customRatioContainer.style.display = isCustom ? 'block' : 'none';
+
+      gallerySettings.aspectRatio = this.value;
+      applySettings();
+    });
+
+    // Gestione dell'input per i controlli a scorrimento
+    minImageWidthInput.addEventListener('input', function () {
+      gallerySettings.minImageWidth = parseInt(this.value);
+      minImageWidthValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    gridGapInput.addEventListener('input', function () {
+      gallerySettings.gridGap = parseInt(this.value);
+      gridGapValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    galleryPaddingInput.addEventListener('input', function () {
+      gallerySettings.galleryPadding = parseInt(this.value);
+      galleryPaddingValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    customRatioInput.addEventListener('input', function () {
+      gallerySettings.customRatio = this.value;
+      applySettings();
+    });
+
+    slideWidthInput.addEventListener('input', function () {
+      gallerySettings.slideWidth = parseInt(this.value);
+      slideWidthValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    slideGapInput.addEventListener('input', function () {
+      gallerySettings.slideGap = parseInt(this.value);
+      slideGapValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    // Gestisci pulsanti
+    saveSettingsBtn.addEventListener('click', saveSettings);
+    closeSettingsBtn.addEventListener('click', () => toggleSettingsPanel(false));
+    resetSettingsBtn.addEventListener('click', resetSettings);
+
+    // Gestisci la scorciatoia da tastiera Alt+I per aprire il pannello
+    document.addEventListener('keydown', function (e) {
+      if (e.altKey && e.key === 'i') {
+        e.preventDefault();
+        toggleSettingsPanel(settingsPanel.style.display === 'none');
       }
     });
   </script>
