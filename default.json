@@ -1,0 +1,9 @@
+{
+  "minImageWidth": 120,
+  "gridGap": 7,
+  "galleryPadding": 20,
+  "aspectRatio": "3/4",
+  "customRatio": "",
+  "slideWidth": 250,
+  "slideGap": 16
+}
