@@ -125,18 +125,13 @@
       flex: 1;
       background-color: rgba(17, 17, 17, 0.9);
       padding: 5px;
-      /* Ridotto il padding */
       box-sizing: border-box;
       overflow-y: auto;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      /* Dimensione ridotta */
       grid-gap: 5px;
-      /* Spazio ridotto tra le immagini */
       justify-content: center;
-      /* Centramento orizzontale */
       align-content: start;
-      /* Allineamento verticale in alto */
       z-index: 2;
       margin-bottom: 0;
     }
@@ -144,7 +139,6 @@
     .gallery-item {
       width: 100%;
       aspect-ratio: 1/1;
-      /* Rapporto quadrato per uniformità */
       background-color: #222;
       overflow: hidden;
       cursor: pointer;
@@ -174,16 +168,13 @@
     #video-slider {
       display: flex;
       overflow-x: auto;
-      /* Permette lo scorrimento orizzontale */
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       scroll-snap-type: x mandatory;
       padding: 0 15px;
       height: 100%;
       scrollbar-width: none;
-      /* Firefox */
       -ms-overflow-style: none;
-      /* IE and Edge */
       flex-grow: 1;
     }
 
@@ -328,7 +319,7 @@
       background-color: #0056b3;
     }
 
-    /* Popup video statue */
+    /* Popup video */
     #videoPopupOverlay {
       position: fixed;
       top: 0;
@@ -363,7 +354,7 @@
       background: #000;
     }
 
-    /* Controlli testuali per il video delle statue */
+    /* Controlli testuali per il video */
     #videoTextControls {
       margin-top: 20px;
       color: white;
@@ -625,10 +616,7 @@
     <div class="icon-container" id="restart-container">
       <div class="icon-wrapper">
         <img src="./icona.png" alt="Icona Restart"
-          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\" http://www.w3.org/2000/svg\"
-          width=\"100\" height=\"100\" viewBox=\"0 0 100 100\">
-        <rect fill=\"%23777\" width=\"100\" height=\"100\" /><text fill=\"%23fff\" font-family=\"Arial\"
-          font-size=\"14\" x=\"10\" y=\"50\">Restart</text></svg>'">
+          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot;><rect fill=&quot;%23777&quot; width=&quot;100&quot; height=&quot;100&quot; /><text fill=&quot;%23fff&quot; font-family=&quot;Arial&quot; font-size=&quot;14&quot; x=&quot;10&quot; y=&quot;50&quot;>Restart</text></svg>'">
       </div>
       <div class="icon-text">Riavvia Presentazione</div>
     </div>
@@ -636,10 +624,7 @@
     <div class="icon-container" id="gallery-thumbnail-container">
       <div class="icon-wrapper">
         <img src="./galleria.png" alt="Anteprima galleria"
-          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\" http://www.w3.org/2000/svg\"
-          width=\"100\" height=\"100\" viewBox=\"0 0 100 100\">
-        <rect fill=\"%23555\" width=\"100\" height=\"100\" /><text fill=\"%23fff\" font-family=\"Arial\"
-          font-size=\"14\" x=\"10\" y=\"50\">Galleria</text></svg>'">
+          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot;><rect fill=&quot;%23555&quot; width=&quot;100&quot; height=&quot;100&quot; /><text fill=&quot;%23fff&quot; font-family=&quot;Arial&quot; font-size=&quot;14&quot; x=&quot;10&quot; y=&quot;50&quot;>Galleria</text></svg>'">
       </div>
       <div class="icon-text">Galleria immagini e audio</div>
     </div>
@@ -815,29 +800,17 @@
     // Verifica disponibilità file - versione locale compatibile
     function checkFile(url, callback) {
       if (isLocalEnvironment) {
-        // In ambiente locale, assumiamo che i file esistano
         callback(true);
       } else {
-        // Ambiente web
         fetch(url, { method: 'HEAD' })
-          .then(response => {
-            if (response.ok) {
-              callback(true);
-            } else {
-              callback(false);
-            }
-          })
-          .catch(() => {
-            callback(false);
-          });
+          .then(response => callback(response.ok))
+          .catch(() => callback(false));
       }
     }
 
     // Avvio video principale
     function initMainVideo() {
       myVideo.load();
-
-      // Gestione click per avviare il video
       videoContainer.addEventListener('click', () => {
         if (myVideo.paused) {
           myVideo.play();
@@ -869,171 +842,139 @@
 
     // Configurazione frecce di navigazione
     function setupArrowNavigation() {
-      // Gestione click freccia sinistra
       leftArrow.addEventListener('click', () => {
         updateInteractionTime();
-        videoSlider.scrollBy({
-          left: -300,
-          behavior: 'smooth'
-        });
+        videoSlider.scrollBy({ left: -300, behavior: 'smooth' });
       });
-
-      // Gestione click freccia destra
       rightArrow.addEventListener('click', () => {
         updateInteractionTime();
-        videoSlider.scrollBy({
-          left: 300,
-          behavior: 'smooth'
-        });
+        videoSlider.scrollBy({ left: 300, behavior: 'smooth' });
       });
     }
 
-    // Variabili per lo scorrimento automatico
+    // Scorrimento automatico
     let sliderInterval;
-    let userInteracted = false;
     let lastInteractionTime = Date.now();
-    const INACTIVITY_TIMEOUT = 5000; // 5 secondi di inattività
+    const INACTIVITY_TIMEOUT = 5000;
 
     function startSliderAutoScroll() {
-      // Ferma eventuali intervalli precedenti
-      if (sliderInterval) {
-        clearInterval(sliderInterval);
-      }
-
-      // Avvia nuovo intervallo
+      if (sliderInterval) clearInterval(sliderInterval);
       sliderInterval = setInterval(() => {
-        // Controlla se è passato abbastanza tempo dall'ultima interazione
         if (Date.now() - lastInteractionTime > INACTIVITY_TIMEOUT) {
-          videoSlider.scrollBy({
-            left: 100,
-            behavior: 'smooth'
-          });
-
-          // Verifica se siamo alla fine e torna all'inizio
+          videoSlider.scrollBy({ left: 100, behavior: 'smooth' });
           if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
-            videoSlider.scrollTo({
-              left: 0,
-              behavior: 'smooth'
-            });
+            videoSlider.scrollTo({ left: 0, behavior: 'smooth' });
           }
         }
       }, 3000);
     }
 
     function stopSliderAutoScroll() {
-      if (sliderInterval) {
-        clearInterval(sliderInterval);
-      }
+      if (sliderInterval) clearInterval(sliderInterval);
     }
 
-    // Aggiorna il timestamp dell'ultima interazione
     function updateInteractionTime() {
       lastInteractionTime = Date.now();
     }
 
     // Gestione touch per lo slider
     let touchStartX = 0;
-    let touchEndX = 0;
     let isDragging = false;
 
     function setupSliderTouchEvents() {
-      videoSlider.addEventListener('touchstart', function (e) {
+      videoSlider.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
         isDragging = true;
-        updateInteractionTime(); // Aggiorna timestamp interazione
+        updateInteractionTime();
       }, { passive: true });
 
-      videoSlider.addEventListener('touchmove', function (e) {
+      videoSlider.addEventListener('touchmove', e => {
         if (!isDragging) return;
-        updateInteractionTime(); // Aggiorna timestamp interazione
-        touchEndX = e.changedTouches[0].screenX;
+        updateInteractionTime();
+        const touchEndX = e.changedTouches[0].screenX;
         const scrollX = touchStartX - touchEndX;
         videoSlider.scrollLeft += scrollX;
         touchStartX = touchEndX;
       }, { passive: true });
 
-      videoSlider.addEventListener('touchend', function () {
+      videoSlider.addEventListener('touchend', () => {
         isDragging = false;
       }, { passive: true });
     }
 
-    // GESTIONE GALLERIA DINAMICA con fallback migliorato
+    // Popolazione galleria e slider
     function populateGallery() {
       gallery.innerHTML = '';
       videoSlider.innerHTML = '';
 
-      // Aggiungi immagini normali
+      // Galleria immagini (numerate da 1 a 17)
       for (let i = 1; i <= 17; i++) {
         const div = document.createElement('div');
         div.className = 'gallery-item';
-
         const img = document.createElement('img');
         const imgPath = `./immagini/${i}.jpg`;
-
-        // Verifica immagine e imposta fallback
         img.onerror = function () {
           this.onerror = null;
-          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${i}</text></svg>`;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${i}</text></svg>`;
           this.parentNode.classList.add('load-error');
         };
-
         img.src = imgPath;
         img.alt = `Immagine numero ${i}`;
-        img.loading = "lazy"; // Aggiunge lazy loading per migliorare le prestazioni
-
+        img.loading = "lazy";
         img.addEventListener('click', () => openImagePopup(imgPath));
         div.appendChild(img);
         gallery.appendChild(div);
       }
 
-      // Aggiungi video allo slider
-      for (let i = 1; i <= 7; i++) {
+      // Array per le slide dello slider (anteprime delle statue)
+      const sliderItems = [
+        { file: "statue1.jpg", label: "Amore  e Psiche - 1822" },
+        { file: "statue2.jpg", label: "Teseo e il Centauro - 1804" },
+        { file: "statue3.jpg", label: "Teseo sul Minotauro - 1783" },
+        { file: "statue4.jpg", label: "Adone e Venere - 1794" },
+        { file: "statue5.jpg", label: "Palamede - 1815" },
+        { file: "statue6.jpg", label: "Ercole e Lica - 1815" },
+        { file: "statue7.jpg", label: "Dedalo e Icaro -  1779" }
+      ];
+
+      sliderItems.forEach(item => {
         const slide = document.createElement('div');
         slide.className = 'video-slide';
-        slide.setAttribute('data-video', `./video/video${i}.mp4`);
-
-        // Crea un'anteprima per il video
+        // Percorso del video relativo (assumendo che i video siano in ./video/ e abbiano lo stesso nome base)
+        slide.setAttribute('data-video', `./video/${item.file.replace('.jpg', '.mp4')}`);
+        // Anteprima dall'interno della cartella /immagini
         const thumbnail = document.createElement('img');
-        thumbnail.src = `./immagini/statue${i}.jpg`;
+        thumbnail.src = `./immagini/${item.file}`;
         thumbnail.onerror = function () {
           this.onerror = null;
-          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video ${i}</text></svg>`;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video</text></svg>`;
         };
-
         const title = document.createElement('div');
         title.className = 'video-title';
-        title.textContent = `Statua ${i}`;
-
+        title.textContent = item.label;
         slide.appendChild(thumbnail);
         slide.appendChild(title);
-
-        // Implementazione click singolo invece di doppio click
         slide.addEventListener('click', function () {
-          openVideoPopup(this.getAttribute('data-video'));
+          openVideoPopup(`./video/${item.file.replace('.jpg', '.mp4')}`);
         });
-
         videoSlider.appendChild(slide);
-      }
+      });
 
-      // Aggiungi evento scroll al video slider per aggiornare l'interazione
       videoSlider.addEventListener('scroll', updateInteractionTime);
-
-      // Configura eventi touch per lo slider
       setupSliderTouchEvents();
-
-      // Avvia lo scorrimento automatico
       startSliderAutoScroll();
-
-      // Applica le impostazioni alla galleria
       applySettings();
     }
 
     // Apertura popup video
     function openVideoPopup(videoSrc) {
+      console.log("Apertura video:", videoSrc);
       statueVideo.src = videoSrc;
       videoPopupOverlay.style.display = 'flex';
       statueVideo.load();
-      statueVideo.play();
+      statueVideo.play().catch(error => console.error("Errore nel play:", error));
     }
 
     // Chiusura popup video
@@ -1047,42 +988,28 @@
     galleryThumbnailContainer.addEventListener('click', () => {
       myVideo.pause();
       populateGallery();
-
-      // Nascondi il contenitore del video
       videoContainer.style.display = 'none';
-
-      // Mostra container della galleria
       galleryContainer.style.display = 'flex';
-
-      // Aggiorna lo stato del pulsante galleria
       galleryThumbnailContainer.style.opacity = "0.5";
       restartContainer.style.opacity = "1";
     });
 
     // Ritorno al menu principale
     function backToMain() {
-      // Ferma lo scorrimento automatico
       stopSliderAutoScroll();
-
-      // Nascondi galleria
       galleryContainer.style.display = 'none';
-
-      // Mostra di nuovo il contenitore del video
       videoContainer.style.display = 'flex';
-
-      // Reimposta l'opacità dei pulsanti
       galleryThumbnailContainer.style.opacity = "1";
     }
-
     backToMenuButton.addEventListener('click', backToMain);
 
-    // POPUP IMMAGINE con gestione errori
+    // POPUP IMMAGINE
     function openImagePopup(src) {
       popupImg.onerror = function () {
         this.onerror = null;
-        this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
+        this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+          <rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
       };
-
       popupImg.src = src;
       popupOverlay.style.display = 'flex';
     }
@@ -1090,25 +1017,16 @@
     function closeImagePopup() {
       popupOverlay.style.display = 'none';
     }
-
     closePopupBtn.addEventListener('click', closeImagePopup);
 
-    // Controlli video popup
+    // Controlli popup video
     statueReplayText.addEventListener('click', () => {
       statueVideo.currentTime = 0;
       statueVideo.play();
     });
-
     closeVideoPopupText.addEventListener('click', closeVideoPopup);
-
-    // Chiusura popup su click all'esterno
-    popupOverlay.addEventListener('click', e => {
-      if (e.target === popupOverlay) closeImagePopup();
-    });
-
-    videoPopupOverlay.addEventListener('click', e => {
-      if (e.target === videoPopupOverlay) closeVideoPopup();
-    });
+    popupOverlay.addEventListener('click', e => { if (e.target === popupOverlay) closeImagePopup(); });
+    videoPopupOverlay.addEventListener('click', e => { if (e.target === videoPopupOverlay) closeVideoPopup(); });
 
     // Gestione errori per il video principale
     myVideo.addEventListener('error', function () {
@@ -1120,78 +1038,57 @@
       });
     });
 
-    // Controllo online/offline per dispositivi mobili
     window.addEventListener('online', function () {
-      if (myVideo.paused && myVideo.error) {
-        initMainVideo();
-      }
+      if (myVideo.paused && myVideo.error) initMainVideo();
     });
 
-    // FUNZIONI PER PANNELLO IMPOSTAZIONI TRASCINABILE
-
-    // Configurazione trascinamento pannello
+    // FUNZIONI PANNELLO IMPOSTAZIONI
     function setupDragPanel() {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
-      // Verifica se l'elemento esiste
       if (settingsHeader) {
         settingsHeader.onmousedown = dragMouseDown;
         settingsHeader.ontouchstart = dragTouchStart;
       }
-
       function dragMouseDown(e) {
         e = e || window.event;
         e.preventDefault();
-        // Posizione del cursore all'avvio
         pos3 = e.clientX;
         pos4 = e.clientY;
         document.onmouseup = closeDragElement;
         document.onmousemove = elementDrag;
       }
-
       function dragTouchStart(e) {
         e = e || window.event;
         e.preventDefault();
         const touch = e.touches[0];
-        // Posizione del tocco all'avvio
         pos3 = touch.clientX;
         pos4 = touch.clientY;
         document.ontouchend = closeDragElement;
         document.ontouchmove = elementTouchDrag;
       }
-
       function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
-        // Calcola la nuova posizione
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        // Imposta la nuova posizione
         settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
         settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
-        // Rimuovi transform per evitare conflitti con il trascinamento
         settingsPanel.style.transform = "none";
       }
-
       function elementTouchDrag(e) {
         e = e || window.event;
         const touch = e.touches[0];
-        // Calcola la nuova posizione
         pos1 = pos3 - touch.clientX;
         pos2 = pos4 - touch.clientY;
         pos3 = touch.clientX;
         pos4 = touch.clientY;
-        // Imposta la nuova posizione
         settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
         settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
-        // Rimuovi transform per evitare conflitti con il trascinamento
         settingsPanel.style.transform = "none";
       }
-
       function closeDragElement() {
-        // Interrompi il movimento
         document.onmouseup = null;
         document.onmousemove = null;
         document.ontouchend = null;
@@ -1199,55 +1096,36 @@
       }
     }
 
-    // FUNZIONI IMPOSTAZIONI
-
-    // Funzione per aggiornare l'interfaccia del pannello con le impostazioni correnti
     function updateSettingsUI() {
       minImageWidthInput.value = gallerySettings.minImageWidth;
       minImageWidthValue.textContent = `${gallerySettings.minImageWidth}px`;
-
       gridGapInput.value = gallerySettings.gridGap;
       gridGapValue.textContent = `${gallerySettings.gridGap}px`;
-
       galleryPaddingInput.value = gallerySettings.galleryPadding;
       galleryPaddingValue.textContent = `${gallerySettings.galleryPadding}px`;
-
       aspectRatioSelect.value = gallerySettings.aspectRatio;
-
       if (gallerySettings.aspectRatio === 'custom') {
         customRatioContainer.style.display = 'block';
         customRatioInput.value = gallerySettings.customRatio;
       } else {
         customRatioContainer.style.display = 'none';
       }
-
       slideWidthInput.value = gallerySettings.slideWidth;
       slideWidthValue.textContent = `${gallerySettings.slideWidth}px`;
-
       slideGapInput.value = gallerySettings.slideGap;
       slideGapValue.textContent = `${gallerySettings.slideGap}px`;
     }
 
-    // Funzione per applicare le impostazioni alla galleria
     function applySettings() {
-      // Applica le impostazioni alla griglia
       gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gallerySettings.minImageWidth}px, 1fr))`;
       gallery.style.gridGap = `${gallerySettings.gridGap}px`;
       gallery.style.padding = `${gallerySettings.galleryPadding}px`;
-
-      // Trova e aggiorna tutti gli elementi gallery-item
       const galleryItems = document.querySelectorAll('.gallery-item');
       let aspectRatioValue = gallerySettings.aspectRatio;
-
       if (aspectRatioValue === 'custom' && gallerySettings.customRatio) {
         aspectRatioValue = gallerySettings.customRatio;
       }
-
-      galleryItems.forEach(item => {
-        item.style.aspectRatio = aspectRatioValue;
-      });
-
-      // Applica le impostazioni allo slider
+      galleryItems.forEach(item => { item.style.aspectRatio = aspectRatioValue; });
       const videoSlides = document.querySelectorAll('.video-slide');
       videoSlides.forEach(slide => {
         slide.style.width = `${gallerySettings.slideWidth}px`;
@@ -1255,10 +1133,8 @@
       });
     }
 
-    // Carica le impostazioni dal file default.json
     async function loadSettings() {
       try {
-        // Prova a caricare dal file default.json nella root
         try {
           const response = await fetch('./default.json');
           if (response.ok) {
@@ -1271,8 +1147,6 @@
         } catch (e) {
           console.log('File default.json non trovato, utilizzo impostazioni predefinite');
         }
-
-        // Se non è disponibile il file, usa impostazioni predefinite
         gallerySettings = { ...defaultSettings };
         updateSettingsUI();
       } catch (error) {
@@ -1280,73 +1154,48 @@
       }
     }
 
-    // Salva le impostazioni in default.json
     function saveSettings() {
-      // In ambiente Electron
       if (isElectronApp) {
         try {
           const fs = require('fs');
           const path = require('path');
-
-          // Determina il percorso dell'applicazione
           const appPath = process.cwd();
           const settingsPath = path.join(appPath, 'default.json');
-
-          // Scrive il file
           fs.writeFileSync(settingsPath, JSON.stringify(gallerySettings, null, 2), 'utf8');
-
           alert('Impostazioni salvate in default.json nella cartella dell\'applicazione.');
-
-          // Chiudi il pannello dopo il salvataggio
           toggleSettingsPanel(false);
         } catch (error) {
           console.error('Errore nel salvataggio delle impostazioni:', error);
           alert('Si è verificato un errore durante il salvataggio delle impostazioni su disco.');
         }
-      }
-      // In ambiente browser standard
-      else {
-        // Crea il contenuto JSON
+      } else {
         const jsonContent = JSON.stringify(gallerySettings, null, 2);
-
-        // Offri l'opzione di download
         const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-
-        // Crea elemento per il download
-        // Crea elemento per il download
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
         downloadLink.download = 'default.json';
         document.body.appendChild(downloadLink);
         downloadLink.click();
-
-        // Pulizia
         setTimeout(() => {
           document.body.removeChild(downloadLink);
           URL.revokeObjectURL(url);
         }, 100);
-
         alert('File default.json scaricato. Salvalo nella cartella principale dell\'applicazione per applicare queste impostazioni all\'avvio.');
-
-        // Chiudi il pannello dopo il salvataggio
         toggleSettingsPanel(false);
       }
     }
 
-    // Ripristina le impostazioni predefinite
     function resetSettings() {
       gallerySettings = { ...defaultSettings };
       updateSettingsUI();
       applySettings();
     }
 
-    // Mostra/nascondi il pannello impostazioni
     function toggleSettingsPanel(show) {
       if (show) {
         modalOverlay.style.display = 'block';
         settingsPanel.style.display = 'block';
-        // Resetta la posizione al centro
         settingsPanel.style.top = '50%';
         settingsPanel.style.left = '50%';
         settingsPanel.style.transform = 'translate(-50%, -50%)';
@@ -1357,16 +1206,13 @@
       }
     }
 
-    // Gestisci il cambiamento del rapporto d'aspetto
     aspectRatioSelect.addEventListener('change', function () {
       const isCustom = this.value === 'custom';
       customRatioContainer.style.display = isCustom ? 'block' : 'none';
-
       gallerySettings.aspectRatio = this.value;
       applySettings();
     });
 
-    // Gestione dell'input per i controlli a scorrimento
     minImageWidthInput.addEventListener('input', function () {
       gallerySettings.minImageWidth = parseInt(this.value);
       minImageWidthValue.textContent = `${this.value}px`;
@@ -1402,16 +1248,12 @@
       applySettings();
     });
 
-    // Gestisci pulsanti
     saveSettingsBtn.addEventListener('click', saveSettings);
     closeSettingsBtn.addEventListener('click', () => toggleSettingsPanel(false));
     resetSettingsBtn.addEventListener('click', resetSettings);
     settingsCloseBtn.addEventListener('click', () => toggleSettingsPanel(false));
-
-    // Chiudi il pannello delle impostazioni quando si fa clic sull'overlay modale
     modalOverlay.addEventListener('click', () => toggleSettingsPanel(false));
 
-    // Gestisci la scorciatoia da tastiera Alt+I per aprire il pannello
     document.addEventListener('keydown', function (e) {
       if (e.altKey && e.key === 'i') {
         e.preventDefault();
