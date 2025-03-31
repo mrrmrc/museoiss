@@ -261,7 +261,7 @@
       font-weight: bold;
     }
 
-    /* Popup immagini */
+    /* POPUP IMMAGINE */
     #popupOverlay {
       position: fixed;
       top: 0;
@@ -319,7 +319,7 @@
       background-color: #0056b3;
     }
 
-    /* Popup video */
+    /* POPUP VIDEO */
     #videoPopupOverlay {
       position: fixed;
       top: 0;
@@ -717,6 +717,14 @@
             <span id="slide-gap-value">15px</span>
           </div>
         </div>
+        <!-- Nuovo controllo per la velocità dello slider -->
+        <div class="settings-row">
+          <div class="settings-item">
+            <label for="slider-speed">Velocità slider (px):</label>
+            <input type="range" id="slider-speed" min="50" max="200" step="10" value="100">
+            <span id="slider-speed-value">100px</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -733,13 +741,10 @@
     // Rileva ambiente locale
     const isLocalEnvironment = window.location.protocol === 'file:';
 
-    // Rileva ambiente Electron
-    const isElectronApp = typeof process !== 'undefined' && process.versions && process.versions.electron;
-
     // ELEMENTI HTML
     const myVideo = document.getElementById('myVideo');
     const videoContainer = document.getElementById('video-container');
-    const restartContainer = document.getElementById('restart-container');
+    let restartContainer = document.getElementById('restart-container');
     const galleryThumbnailContainer = document.getElementById('gallery-thumbnail-container');
     const galleryContainer = document.getElementById('gallery-container');
     const gallery = document.getElementById('gallery');
@@ -779,6 +784,9 @@
     const slideWidthValue = document.getElementById('slide-width-value');
     const slideGapInput = document.getElementById('slide-gap');
     const slideGapValue = document.getElementById('slide-gap-value');
+    // Nuovi elementi per la velocità dello slider
+    const sliderSpeedInput = document.getElementById('slider-speed');
+    const sliderSpeedValue = document.getElementById('slider-speed-value');
     const resetSettingsBtn = document.getElementById('reset-settings');
     const saveSettingsBtn = document.getElementById('save-settings');
     const closeSettingsBtn = document.getElementById('close-settings');
@@ -791,22 +799,12 @@
       aspectRatio: "1/1",
       customRatio: "",
       slideWidth: 250,
-      slideGap: 15
+      slideGap: 15,
+      sliderSpeed: 100
     };
 
     // Copia le impostazioni predefinite
     let gallerySettings = { ...defaultSettings };
-
-    // Verifica disponibilità file - versione locale compatibile
-    function checkFile(url, callback) {
-      if (isLocalEnvironment) {
-        callback(true);
-      } else {
-        fetch(url, { method: 'HEAD' })
-          .then(response => callback(response.ok))
-          .catch(() => callback(false));
-      }
-    }
 
     // Avvio video principale
     function initMainVideo() {
@@ -860,8 +858,11 @@
     function startSliderAutoScroll() {
       if (sliderInterval) clearInterval(sliderInterval);
       sliderInterval = setInterval(() => {
-        if (Date.now() - lastInteractionTime > INACTIVITY_TIMEOUT) {
-          videoSlider.scrollBy({ left: 100, behavior: 'smooth' });
+        const elapsed = Date.now() - lastInteractionTime;
+        console.log("Tempo trascorso dall'ultima interazione:", elapsed);
+        if (elapsed > INACTIVITY_TIMEOUT) {
+          console.log("Scorrimento automatico in corso...");
+          videoSlider.scrollBy({ left: gallerySettings.sliderSpeed, behavior: 'smooth' });
           if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
             videoSlider.scrollTo({ left: 0, behavior: 'smooth' });
           }
@@ -1043,6 +1044,7 @@
     });
 
     // FUNZIONI PANNELLO IMPOSTAZIONI
+
     function setupDragPanel() {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
       if (settingsHeader) {
@@ -1114,6 +1116,8 @@
       slideWidthValue.textContent = `${gallerySettings.slideWidth}px`;
       slideGapInput.value = gallerySettings.slideGap;
       slideGapValue.textContent = `${gallerySettings.slideGap}px`;
+      sliderSpeedInput.value = gallerySettings.sliderSpeed;
+      sliderSpeedValue.textContent = `${gallerySettings.sliderSpeed}px`;
     }
 
     function applySettings() {
@@ -1135,55 +1139,25 @@
 
     async function loadSettings() {
       try {
-        try {
-          const response = await fetch('./default.json');
-          if (response.ok) {
-            const settings = await response.json();
-            gallerySettings = settings;
-            console.log('Impostazioni caricate da default.json');
-            updateSettingsUI();
-            return;
-          }
-        } catch (e) {
-          console.log('File default.json non trovato, utilizzo impostazioni predefinite');
+        const saved = localStorage.getItem('gallerySettings');
+        if (saved) {
+          gallerySettings = JSON.parse(saved);
+          console.log('Impostazioni caricate dal localStorage');
+        } else {
+          gallerySettings = { ...defaultSettings };
         }
-        gallerySettings = { ...defaultSettings };
         updateSettingsUI();
       } catch (error) {
         console.error('Errore nel caricamento delle impostazioni:', error);
+        gallerySettings = { ...defaultSettings };
+        updateSettingsUI();
       }
     }
 
     function saveSettings() {
-      if (isElectronApp) {
-        try {
-          const fs = require('fs');
-          const path = require('path');
-          const appPath = process.cwd();
-          const settingsPath = path.join(appPath, 'default.json');
-          fs.writeFileSync(settingsPath, JSON.stringify(gallerySettings, null, 2), 'utf8');
-          alert('Impostazioni salvate in default.json nella cartella dell\'applicazione.');
-          toggleSettingsPanel(false);
-        } catch (error) {
-          console.error('Errore nel salvataggio delle impostazioni:', error);
-          alert('Si è verificato un errore durante il salvataggio delle impostazioni su disco.');
-        }
-      } else {
-        const jsonContent = JSON.stringify(gallerySettings, null, 2);
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = 'default.json';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        setTimeout(() => {
-          document.body.removeChild(downloadLink);
-          URL.revokeObjectURL(url);
-        }, 100);
-        alert('File default.json scaricato. Salvalo nella cartella principale dell\'applicazione per applicare queste impostazioni all\'avvio.');
-        toggleSettingsPanel(false);
-      }
+      localStorage.setItem('gallerySettings', JSON.stringify(gallerySettings));
+      alert('Impostazioni salvate nel browser.');
+      toggleSettingsPanel(false);
     }
 
     function resetSettings() {
@@ -1246,6 +1220,11 @@
       gallerySettings.slideGap = parseInt(this.value);
       slideGapValue.textContent = `${this.value}px`;
       applySettings();
+    });
+
+    sliderSpeedInput.addEventListener('input', function () {
+      gallerySettings.sliderSpeed = parseInt(this.value);
+      sliderSpeedValue.textContent = `${this.value}px`;
     });
 
     saveSettingsBtn.addEventListener('click', saveSettings);
