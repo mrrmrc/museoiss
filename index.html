@@ -1412,7 +1412,7 @@
 
   function shutdown() {
     fetch("http://127.0.0.1:3000/shutdown", {
-      method: "POST"
+      method: "GET"
     }).then(() => {
       alert("Spegnimento in corso...");
     }).catch(() => {
