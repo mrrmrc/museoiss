@@ -14,17 +14,24 @@
       width: 100%;
       height: 100%;
       background-color: #000;
-      font-family: Raleway  , cursive, sans-serif;
+      font-family: Raleway, cursive, sans-serif;
       display: flex;
       flex-direction: column;
       position: relative;
       z-index: 0;
       overflow-x: hidden;
-      touch-action: pan-x pan-y; /* Previene il pinch zoom ma permette lo scorrimento */
+      touch-action: pan-x pan-y;
+      /* Previene il pinch zoom ma permette lo scorrimento */
     }
 
     /* Previene lo zoom su elementi interattivi */
-    button, a, input, select, textarea, img, video {
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    img,
+    video {
       touch-action: manipulation;
     }
 
@@ -149,7 +156,7 @@
       box-sizing: border-box;
       overflow-y: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-template-columns: repeat(5, 1fr);
       grid-gap: 5px;
       justify-content: center;
       align-content: start;
@@ -547,7 +554,7 @@
       }
 
       #gallery {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(5, 1fr);
       }
 
       .video-slide {
@@ -559,7 +566,7 @@
         height: 35px;
         font-size: 20px;
       }
-      
+
       #gallery-header h1 {
         font-size: 1.6rem;
       }
@@ -586,7 +593,7 @@
       }
 
       #gallery {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-template-columns: repeat(5, 1fr);
         padding: 5px;
       }
 
@@ -618,7 +625,7 @@
         font-size: 18px;
         margin: 0 5px;
       }
-      
+
       #gallery-header h1 {
         font-size: 1.4rem;
       }
@@ -628,14 +635,14 @@
     .load-error {
       border: 2px solid red !important;
     }
-    
+
     #shutdownButton {
       position: fixed;
       top: 10px;
       right: 10px;
       z-index: 9999;
       display: none;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
@@ -655,9 +662,9 @@
   <div id="gallery-container">
     <!-- HEADER GALLERIA -->
     <div id="gallery-header">
-      <h1>Galleria Canova</h1>
+      <h1></h1>
     </div>
-    
+
     <!-- GALLERIA IMMAGINI -->
     <div id="gallery"></div>
 
@@ -727,6 +734,30 @@
 
     <div id="settings-content">
       <div class="settings-group">
+        <h3>Posizione Immagini Prima Riga</h3>
+        <div class="settings-row">
+          <div class="settings-item">
+            <label for="img1-position">Posizione 1.jpg:</label>
+            <select id="img1-position">
+              <option value="1">Colonna 1</option>
+              <option value="2" selected>Colonna 2</option>
+              <option value="3">Colonna 3</option>
+              <option value="4">Colonna 4</option>
+              <option value="5">Colonna 5</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <label for="img2-position">Posizione 2.jpg:</label>
+            <select id="img2-position">
+              <option value="1">Colonna 1</option>
+              <option value="2">Colonna 2</option>
+              <option value="3" selected>Colonna 3</option>
+              <option value="4">Colonna 4</option>
+              <option value="5">Colonna 5</option>
+            </select>
+          </div>
+        </div>
+
         <h3>Impostazioni Griglia</h3>
         <div class="settings-row">
           <div class="settings-item">
@@ -826,11 +857,11 @@
     const isLocalEnvironment = window.location.protocol === 'file:';
 
     // Disabilita zoom tramite JavaScript
-    document.addEventListener('gesturestart', function(e) {
+    document.addEventListener('gesturestart', function (e) {
       e.preventDefault();
     });
 
-    document.addEventListener('touchmove', function(e) {
+    document.addEventListener('touchmove', function (e) {
       if (e.scale !== 1) {
         e.preventDefault();
       }
@@ -890,6 +921,9 @@
     const resetSettingsBtn = document.getElementById('reset-settings');
     const saveSettingsBtn = document.getElementById('save-settings');
     const closeSettingsBtn = document.getElementById('close-settings');
+    // Nuovi elementi per posizionamento immagini
+    const img1PositionSelect = document.getElementById('img1-position');
+    const img2PositionSelect = document.getElementById('img2-position');
 
     // Configurazione impostazioni predefinite
     const defaultSettings = {
@@ -900,532 +934,599 @@
       customRatio: "",
       slideWidth: 250,
       slideGap: 15,
-     sliderSpeed: 100,
-     headerPadding: 15,
-     footerPadding: 15
-   };
+      sliderSpeed: 100,
+      headerPadding: 15,
+      footerPadding: 15,
+      img1Position: 2, // Colonna 2 (default)
+      img2Position: 3  // Colonna 3 (default)
+    };
 
-   // Copia le impostazioni predefinite
-   let gallerySettings = { ...defaultSettings };
+    // Copia le impostazioni predefinite
+    let gallerySettings = { ...defaultSettings };
 
-   // Avvio video principale
-   function initMainVideo() {
-     myVideo.load();
-     videoContainer.addEventListener('click', () => {
-       if (myVideo.paused) {
-         myVideo.play();
-       } else {
-         myVideo.pause();
-       }
-     }, { once: false });
-   }
-
-   // Avvio all'apertura della pagina
-   document.addEventListener('DOMContentLoaded', async () => {
-     await loadSettings();
-     initMainVideo();
-     setupDragPanel();
-     setupArrowNavigation();
-   });
-
-   // Gestione fine video
-   myVideo.addEventListener('ended', () => {
-     myVideo.currentTime = 0;
-     myVideo.pause();
-   });
-
-   // Riavvio video
-   restartContainer.addEventListener('click', () => {
-     myVideo.currentTime = 0;
-     myVideo.play();
-   });
-
-   // Configurazione frecce di navigazione
-   function setupArrowNavigation() {
-     leftArrow.addEventListener('click', () => {
-       updateInteractionTime();
-       videoSlider.scrollBy({ left: -300, behavior: 'smooth' });
-     });
-     rightArrow.addEventListener('click', () => {
-       updateInteractionTime();
-       videoSlider.scrollBy({ left: 300, behavior: 'smooth' });
-     });
-   }
-
-   // Scorrimento automatico
-   let sliderInterval;
-   let lastInteractionTime = Date.now();
-   const INACTIVITY_TIMEOUT = 5000;
-
-   function startSliderAutoScroll() {
-     if (sliderInterval) clearInterval(sliderInterval);
-     sliderInterval = setInterval(() => {
-       const elapsed = Date.now() - lastInteractionTime;
-       console.log("Tempo trascorso dall'ultima interazione:", elapsed);
-       if (elapsed > INACTIVITY_TIMEOUT) {
-         console.log("Scorrimento automatico in corso...");
-         videoSlider.scrollBy({ left: gallerySettings.sliderSpeed, behavior: 'smooth' });
-         if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
-           videoSlider.scrollTo({ left: 0, behavior: 'smooth' });
-         }
-       }
-     }, 3000);
-   }
-
-   function stopSliderAutoScroll() {
-     if (sliderInterval) clearInterval(sliderInterval);
-   }
-
-   function updateInteractionTime() {
-     lastInteractionTime = Date.now();
-   }
-
-   // Gestione touch per lo slider
-   let touchStartX = 0;
-   let isDragging = false;
-
-   function setupSliderTouchEvents() {
-     videoSlider.addEventListener('touchstart', e => {
-       touchStartX = e.changedTouches[0].screenX;
-       isDragging = true;
-       updateInteractionTime();
-     }, { passive: true });
-
-     videoSlider.addEventListener('touchmove', e => {
-       if (!isDragging) return;
-       updateInteractionTime();
-       const touchEndX = e.changedTouches[0].screenX;
-       const scrollX = touchStartX - touchEndX;
-       videoSlider.scrollLeft += scrollX;
-       touchStartX = touchEndX;
-     }, { passive: true });
-
-     videoSlider.addEventListener('touchend', () => {
-       isDragging = false;
-     }, { passive: true });
-   }
-
-   // Popolazione galleria e slider
-   function populateGallery() {
-     gallery.innerHTML = '';
-     videoSlider.innerHTML = '';
-
-     // Galleria immagini (numerate da 1 a 17)
-     for (let i = 1; i <= 17; i++) {
-       const div = document.createElement('div');
-       div.className = 'gallery-item';
-       const img = document.createElement('img');
-       const imgPath = `./immagini/${i}.jpg`;
-       img.onerror = function () {
-         this.onerror = null;
-         this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-           <rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${i}</text></svg>`;
-         this.parentNode.classList.add('load-error');
-       };
-       img.src = imgPath;
-       img.alt = `Immagine numero ${i}`;
-       img.loading = "lazy";
-       img.addEventListener('click', () => openImagePopup(imgPath));
-       div.appendChild(img);
-       gallery.appendChild(div);
-     }
-
-     // Array per le slide dello slider (anteprime delle statue)
-     const sliderItems = [
-       { file: "statue1.jpg", label: "Amore  e Psiche - 1822" },
-       { file: "statue2.jpg", label: "Teseo e il Centauro - 1804" },
-       { file: "statue3.jpg", label: "Teseo sul Minotauro - 1783" },
-       { file: "statue4.jpg", label: "Adone e Venere - 1794" },
-       { file: "statue5.jpg", label: "Palamede - 1815" },
-       { file: "statue6.jpg", label: "Ercole e Lica - 1815" },
-       { file: "statue7.jpg", label: "Dedalo e Icaro -  1779" }
-     ];
-
-     sliderItems.forEach(item => {
-       const slide = document.createElement('div');
-       slide.className = 'video-slide';
-       // Percorso del video relativo (assumendo che i video siano in ./video/ e abbiano lo stesso nome base)
-       slide.setAttribute('data-video', `./video/${item.file.replace('.jpg', '.mp4')}`);
-       // Anteprima dall'interno della cartella /immagini
-       const thumbnail = document.createElement('img');
-       thumbnail.src = `./immagini/${item.file}`;
-       thumbnail.onerror = function () {
-         this.onerror = null;
-         this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-           <rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video</text></svg>`;
-       };
-       const title = document.createElement('div');
-       title.className = 'video-title';
-       title.textContent = item.label;
-       slide.appendChild(thumbnail);
-       slide.appendChild(title);
-       slide.addEventListener('click', function () {
-         openVideoPopup(`./video/${item.file.replace('.jpg', '.mp4')}`);
-       });
-       videoSlider.appendChild(slide);
-     });
-
-     videoSlider.addEventListener('scroll', updateInteractionTime);
-     setupSliderTouchEvents();
-     startSliderAutoScroll();
-     applySettings();
-   }
-
-   // Apertura popup video
-   function openVideoPopup(videoSrc) {
-     console.log("Apertura video:", videoSrc);
-     statueVideo.src = videoSrc;
-     videoPopupOverlay.style.display = 'flex';
-     statueVideo.load();
-     statueVideo.play().catch(error => console.error("Errore nel play:", error));
-   }
-
-   // Chiusura popup video
-   function closeVideoPopup() {
-     videoPopupOverlay.style.display = 'none';
-     statueVideo.pause();
-     statueVideo.currentTime = 0;
-   }
-
-   // Apertura galleria
-   galleryThumbnailContainer.addEventListener('click', () => {
-     myVideo.pause();
-     populateGallery();
-     videoContainer.style.display = 'none';
-     galleryContainer.style.display = 'flex';
-     galleryThumbnailContainer.style.opacity = "0.5";
-     restartContainer.style.opacity = "1";
-   });
-
-   // Ritorno al menu principale
-   function backToMain() {
-     stopSliderAutoScroll();
-     galleryContainer.style.display = 'none';
-     videoContainer.style.display = 'flex';
-     galleryThumbnailContainer.style.opacity = "1";
-   }
-   backToMenuButton.addEventListener('click', backToMain);
-
-   // POPUP IMMAGINE
-   function openImagePopup(src) {
-     popupImg.onerror = function () {
-       this.onerror = null;
-       this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
-         <rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
-     };
-     popupImg.src = src;
-     popupOverlay.style.display = 'flex';
-   }
-
-   function closeImagePopup() {
-     popupOverlay.style.display = 'none';
-   }
-   closePopupBtn.addEventListener('click', closeImagePopup);
-
-   // Controlli popup video
-   statueReplayText.addEventListener('click', () => {
-     statueVideo.currentTime = 0;
-     statueVideo.play();
-   });
-   closeVideoPopupText.addEventListener('click', closeVideoPopup);
-   popupOverlay.addEventListener('click', e => { if (e.target === popupOverlay) closeImagePopup(); });
-   videoPopupOverlay.addEventListener('click', e => { if (e.target === videoPopupOverlay) closeVideoPopup(); });
-
-   // Gestione errori per il video principale
-   myVideo.addEventListener('error', function () {
-     videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;"><p>Video non disponibile.</p><p>Tocca per riprovare</p></div>';
-     videoContainer.addEventListener('click', () => {
-       videoContainer.innerHTML = '<video id="myVideo" playsinline><source src="./video/canovaovale.mp4" type="video/mp4">Il tuo browser non supporta il tag video.</video>';
-       myVideo = document.getElementById('myVideo');
-       initMainVideo();
-     });
-   });
-
-   window.addEventListener('online', function () {
-     if (myVideo.paused && myVideo.error) initMainVideo();
-   });
-
-   // FUNZIONI PANNELLO IMPOSTAZIONI
-
-   function setupDragPanel() {
-     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-     if (settingsHeader) {
-       settingsHeader.onmousedown = dragMouseDown;
-       settingsHeader.ontouchstart = dragTouchStart;
-     }
-     function dragMouseDown(e) {
-       e = e || window.event;
-       e.preventDefault();
-       pos3 = e.clientX;
-       pos4 = e.clientY;
-       document.onmouseup = closeDragElement;
-       document.onmousemove = elementDrag;
-     }
-     function dragTouchStart(e) {
-       e = e || window.event;
-       e.preventDefault();
-       const touch = e.touches[0];
-       pos3 = touch.clientX;
-       pos4 = touch.clientY;
-       document.ontouchend = closeDragElement;
-       document.ontouchmove = elementTouchDrag;
-     }
-     function elementDrag(e) {
-       e = e || window.event;
-       e.preventDefault();
-       pos1 = pos3 - e.clientX;
-       pos2 = pos4 - e.clientY;
-       pos3 = e.clientX;
-       pos4 = e.clientY;
-       settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
-       settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
-       settingsPanel.style.transform = "none";
-     }
-     function elementTouchDrag(e) {
-       e = e || window.event;
-       const touch = e.touches[0];
-       pos1 = pos3 - touch.clientX;
-       pos2 = pos4 - touch.clientY;
-       pos3 = touch.clientX;
-       pos4 = touch.clientY;
-       settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
-       settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
-       settingsPanel.style.transform = "none";
-     }
-     function closeDragElement() {
-       document.onmouseup = null;
-       document.onmousemove = null;
-       document.ontouchend = null;
-       document.ontouchmove = null;
-     }
-   }
-
-   function updateSettingsUI() {
-     minImageWidthInput.value = gallerySettings.minImageWidth;
-     minImageWidthValue.textContent = `${gallerySettings.minImageWidth}px`;
-     gridGapInput.value = gallerySettings.gridGap;
-     gridGapValue.textContent = `${gallerySettings.gridGap}px`;
-     galleryPaddingInput.value = gallerySettings.galleryPadding;
-     galleryPaddingValue.textContent = `${gallerySettings.galleryPadding}px`;
-     aspectRatioSelect.value = gallerySettings.aspectRatio;
-     if (gallerySettings.aspectRatio === 'custom') {
-       customRatioContainer.style.display = 'block';
-       customRatioInput.value = gallerySettings.customRatio;
-     } else {
-       customRatioContainer.style.display = 'none';
-     }
-     slideWidthInput.value = gallerySettings.slideWidth;
-     slideWidthValue.textContent = `${gallerySettings.slideWidth}px`;
-     slideGapInput.value = gallerySettings.slideGap;
-     slideGapValue.textContent = `${gallerySettings.slideGap}px`;
-     sliderSpeedInput.value = gallerySettings.sliderSpeed;
-     sliderSpeedValue.textContent = `${gallerySettings.sliderSpeed}px`;
-     
-     // Aggiornamento valori per header e footer
-     headerPaddingInput.value = gallerySettings.headerPadding;
-     headerPaddingNumber.value = gallerySettings.headerPadding;
-     footerPaddingInput.value = gallerySettings.footerPadding;
-     footerPaddingNumber.value = gallerySettings.footerPadding;
-   }
-
-   function applySettings() {
-     gallery.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gallerySettings.minImageWidth}px, 1fr))`;
-     gallery.style.gridGap = `${gallerySettings.gridGap}px`;
-     gallery.style.padding = `${gallerySettings.galleryPadding}px`;
-     const galleryItems = document.querySelectorAll('.gallery-item');
-     let aspectRatioValue = gallerySettings.aspectRatio;
-     if (aspectRatioValue === 'custom' && gallerySettings.customRatio) {
-       aspectRatioValue = gallerySettings.customRatio;
-     }
-     galleryItems.forEach(item => { item.style.aspectRatio = aspectRatioValue; });
-     const videoSlides = document.querySelectorAll('.video-slide');
-     videoSlides.forEach(slide => {
-       slide.style.width = `${gallerySettings.slideWidth}px`;
-       slide.style.marginRight = `${gallerySettings.slideGap}px`;
-     });
-     
-     // Applica padding header e footer
-     document.getElementById('gallery-header').style.padding = `${gallerySettings.headerPadding}px 0`;
-     document.getElementById('gallery-footer').style.padding = `${gallerySettings.footerPadding}px 0`;
-   }
-
-   async function loadSettings() {
-     try {
-       const saved = localStorage.getItem('gallerySettings');
-       if (saved) {
-         gallerySettings = JSON.parse(saved);
-         console.log('Impostazioni caricate dal localStorage');
-       } else {
-         gallerySettings = { ...defaultSettings };
-       }
-       updateSettingsUI();
-     } catch (error) {
-       console.error('Errore nel caricamento delle impostazioni:', error);
-       gallerySettings = { ...defaultSettings };
-       updateSettingsUI();
-     }
-   }
-
-   function saveSettings() {
-     localStorage.setItem('gallerySettings', JSON.stringify(gallerySettings));
-     alert('Impostazioni salvate nel browser.');
-     toggleSettingsPanel(false);
-   }
-
-   function resetSettings() {
-     gallerySettings = { ...defaultSettings };
-     updateSettingsUI();
-     applySettings();
-   }
-
-   function toggleSettingsPanel(show) {
-     if (show) {
-       modalOverlay.style.display = 'block';
-       settingsPanel.style.display = 'block';
-       settingsPanel.style.top = '50%';
-       settingsPanel.style.left = '50%';
-       settingsPanel.style.transform = 'translate(-50%, -50%)';
-       updateSettingsUI();
-     } else {
-       modalOverlay.style.display = 'none';
-       settingsPanel.style.display = 'none';
-     }
-   }
-
-   aspectRatioSelect.addEventListener('change', function () {
-     const isCustom = this.value === 'custom';
-     customRatioContainer.style.display = isCustom ? 'block' : 'none';
-     gallerySettings.aspectRatio = this.value;
-     applySettings();
-   });
-
-   minImageWidthInput.addEventListener('input', function () {
-     gallerySettings.minImageWidth = parseInt(this.value);
-     minImageWidthValue.textContent = `${this.value}px`;
-     applySettings();
-   });
-
-   gridGapInput.addEventListener('input', function () {
-     gallerySettings.gridGap = parseInt(this.value);
-     gridGapValue.textContent = `${this.value}px`;
-     applySettings();
-   });
-
-   galleryPaddingInput.addEventListener('input', function () {
-     gallerySettings.galleryPadding = parseInt(this.value);
-     galleryPaddingValue.textContent = `${this.value}px`;
-     applySettings();
-   });
-
-   customRatioInput.addEventListener('input', function () {
-     gallerySettings.customRatio = this.value;
-     applySettings();
-   });
-
-   slideWidthInput.addEventListener('input', function () {
-     gallerySettings.slideWidth = parseInt(this.value);
-     slideWidthValue.textContent = `${this.value}px`;
-     applySettings();
-   });
-
-   slideGapInput.addEventListener('input', function () {
-     gallerySettings.slideGap = parseInt(this.value);
-     slideGapValue.textContent = `${this.value}px`;
-     applySettings();
-   });
-
-   sliderSpeedInput.addEventListener('input', function () {
-     gallerySettings.sliderSpeed = parseInt(this.value);
-     sliderSpeedValue.textContent = `${this.value}px`;
-   });
-   
-   // Event listener per i nuovi controlli header e footer
-   headerPaddingInput.addEventListener('input', function() {
-     gallerySettings.headerPadding = parseInt(this.value);
-     headerPaddingNumber.value = this.value;
-     applySettings();
-   });
-
-   headerPaddingNumber.addEventListener('change', function() {
-     const value = parseInt(this.value);
-     if (value >= 0 && value <= 50) {
-       gallerySettings.headerPadding = value;
-       headerPaddingInput.value = value;
-       applySettings();
-     } else {
-       this.value = gallerySettings.headerPadding; // Ripristina valore precedente
-     }
-   });
-
-   footerPaddingInput.addEventListener('input', function() {
-     gallerySettings.footerPadding = parseInt(this.value);
-     footerPaddingNumber.value = this.value;
-     applySettings();
-   });
-
-   footerPaddingNumber.addEventListener('change', function() {
-     const value = parseInt(this.value);
-     if (value >= 0 && value <= 50) {
-       gallerySettings.footerPadding = value;
-       footerPaddingInput.value = value;
-       applySettings();
-     } else {
-       this.value = gallerySettings.footerPadding; // Ripristina valore precedente
-     }
-   });
-
-   saveSettingsBtn.addEventListener('click', saveSettings);
-   closeSettingsBtn.addEventListener('click', () => toggleSettingsPanel(false));
-   resetSettingsBtn.addEventListener('click', resetSettings);
-   settingsCloseBtn.addEventListener('click', () => toggleSettingsPanel(false));
-   modalOverlay.addEventListener('click', () => toggleSettingsPanel(false));
-
-   document.addEventListener('keydown', function (e) {
-     if (e.altKey && e.key === 'i') {
-       e.preventDefault();
-       toggleSettingsPanel(settingsPanel.style.display === 'none');
-     }
-   });
- </script>
-
-<script>
-  let touchCount = 0;
-  let timeout = null;
-
-  function registerTouch(event) {
-    const y = event.touches ? event.touches[0].clientY : event.clientY;
-    if (y > 100) return; // accetta solo tocchi nella parte alta dello schermo
-
-    touchCount++;
-
-    if (touchCount >= 7) {
-      document.getElementById("shutdownButton").style.display = "block";
-      touchCount = 0; // reset
+    // Avvio video principale
+    function initMainVideo() {
+      myVideo.load();
+      videoContainer.addEventListener('click', () => {
+        if (myVideo.paused) {
+          myVideo.play();
+        } else {
+          myVideo.pause();
+        }
+      }, { once: false });
     }
 
-    // Reset conteggio se troppo tempo tra i tocchi
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      touchCount = 0;
-    }, 3000);
-  }
-
-  function shutdown() {
-    fetch("http://127.0.0.1:3000/shutdown", {
-      method: "GET"
-    }).then(() => {
-      alert("Spegnimento in corso...");
-    }).catch(() => {
-      alert("Errore nella richiesta di spegnimento");
+    // Avvio all'apertura della pagina
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadSettings();
+      initMainVideo();
+      setupDragPanel();
+      setupArrowNavigation();
     });
-  }
 
-  // Supporta click e tocchi
-  window.addEventListener("click", registerTouch);
-  window.addEventListener("touchstart", registerTouch);
-</script>
+    // Gestione fine video
+    myVideo.addEventListener('ended', () => {
+      myVideo.currentTime = 0;
+      myVideo.pause();
+    });
 
+    // Riavvio video
+    restartContainer.addEventListener('click', () => {
+      myVideo.currentTime = 0;
+      myVideo.play();
+    });
 
+    // Configurazione frecce di navigazione
+    function setupArrowNavigation() {
+      leftArrow.addEventListener('click', () => {
+        updateInteractionTime();
+        videoSlider.scrollBy({ left: -300, behavior: 'smooth' });
+      });
+      rightArrow.addEventListener('click', () => {
+        updateInteractionTime();
+        videoSlider.scrollBy({ left: 300, behavior: 'smooth' });
+      });
+    }
+
+    // Scorrimento automatico
+    let sliderInterval;
+    let lastInteractionTime = Date.now();
+    const INACTIVITY_TIMEOUT = 5000;
+
+    function startSliderAutoScroll() {
+      if (sliderInterval) clearInterval(sliderInterval);
+      sliderInterval = setInterval(() => {
+        const elapsed = Date.now() - lastInteractionTime;
+        console.log("Tempo trascorso dall'ultima interazione:", elapsed);
+        if (elapsed > INACTIVITY_TIMEOUT) {
+          console.log("Scorrimento automatico in corso...");
+          videoSlider.scrollBy({ left: gallerySettings.sliderSpeed, behavior: 'smooth' });
+          if (videoSlider.scrollLeft + videoSlider.clientWidth >= videoSlider.scrollWidth - 50) {
+            videoSlider.scrollTo({ left: 0, behavior: 'smooth' });
+          }
+        }
+      }, 3000);
+    }
+
+    function stopSliderAutoScroll() {
+      if (sliderInterval) clearInterval(sliderInterval);
+    }
+
+    function updateInteractionTime() {
+      lastInteractionTime = Date.now();
+    }
+
+    // Gestione touch per lo slider
+    let touchStartX = 0;
+    let isDragging = false;
+
+    function setupSliderTouchEvents() {
+      videoSlider.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        isDragging = true;
+        updateInteractionTime();
+      }, { passive: true });
+
+      videoSlider.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        updateInteractionTime();
+        const touchEndX = e.changedTouches[0].screenX;
+        const scrollX = touchStartX - touchEndX;
+        videoSlider.scrollLeft += scrollX;
+        touchStartX = touchEndX;
+      }, { passive: true });
+
+      videoSlider.addEventListener('touchend', () => {
+        isDragging = false;
+      }, { passive: true });
+    }
+
+    // Popolazione galleria e slider con layout specifico e posizioni configurabili
+    function populateGallery() {
+      gallery.innerHTML = '';
+      videoSlider.innerHTML = '';
+
+      // Crea un array vuoto per il layout
+      const layoutArray = Array(20).fill(null);
+
+      // Imposta le posizioni di 1.jpg e 2.jpg nella prima riga (indici 0-4)
+      const img1Pos = gallerySettings.img1Position - 1;
+      const img2Pos = gallerySettings.img2Position - 1;
+      layoutArray[img1Pos] = 1;
+      layoutArray[img2Pos] = 2;
+
+      // Riempie il resto del layout
+      // Seconda riga (indici 5-9)
+      for (let i = 0; i < 5; i++) {
+        layoutArray[i + 5] = i + 3;
+      }
+
+      // Terza riga (indici 10-14)
+      for (let i = 0; i < 5; i++) {
+        layoutArray[i + 10] = i + 8;
+      }
+
+      // Quarta riga (indici 15-19)
+      for (let i = 0; i < 5; i++) {
+        layoutArray[i + 15] = i + 13;
+      }
+
+      // Crea gli elementi della galleria
+      layoutArray.forEach((imgNum, index) => {
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+
+        // Se è uno spazio vuoto
+        if (imgNum === null) {
+          div.style.visibility = 'hidden'; // Rendiamo l'elemento invisibile ma manteniamo lo spazio
+          gallery.appendChild(div);
+          return;
+        }
+
+        const img = document.createElement('img');
+        const imgPath = `./immagini/${imgNum}.jpg`;
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+           <rect fill="%23777" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Immagine ${imgNum}</text></svg>`;
+          this.parentNode.classList.add('load-error');
+        };
+        img.src = imgPath;
+        img.alt = `Immagine numero ${imgNum}`;
+        img.loading = "lazy";
+        img.addEventListener('click', () => openImagePopup(imgPath));
+        div.appendChild(img);
+        gallery.appendChild(div);
+      });
+
+      // Array per le slide dello slider (anteprime delle statue)
+      const sliderItems = [
+        { file: "statue1.jpg", label: "Amore  e Psiche - 1822" },
+        { file: "statue2.jpg", label: "Teseo e il Centauro - 1804" },
+        { file: "statue3.jpg", label: "Teseo sul Minotauro - 1783" },
+        { file: "statue4.jpg", label: "Adone e Venere - 1794" },
+        { file: "statue5.jpg", label: "Palamede - 1815" },
+        { file: "statue6.jpg", label: "Ercole e Lica - 1815" },
+        { file: "statue7.jpg", label: "Dedalo e Icaro -  1779" }
+      ];
+
+      sliderItems.forEach(item => {
+        const slide = document.createElement('div');
+        slide.className = 'video-slide';
+        // Percorso del video relativo (assumendo che i video siano in ./video/ e abbiano lo stesso nome base)
+        slide.setAttribute('data-video', `./video/${item.file.replace('.jpg', '.mp4')}`);
+        // Anteprima dall'interno della cartella /immagini
+        const thumbnail = document.createElement('img');
+        thumbnail.src = `./immagini/${item.file}`;
+        thumbnail.onerror = function () {
+          this.onerror = null;
+          this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+           <rect fill="%23555" width="100" height="100"/><text fill="%23fff" font-family="Arial" font-size="14" x="10" y="50">Video</text></svg>`;
+        };
+        const title = document.createElement('div');
+        title.className = 'video-title';
+        title.textContent = item.label;
+        slide.appendChild(thumbnail);
+        slide.appendChild(title);
+        slide.addEventListener('click', function () {
+          openVideoPopup(`./video/${item.file.replace('.jpg', '.mp4')}`);
+        });
+        videoSlider.appendChild(slide);
+      });
+
+      videoSlider.addEventListener('scroll', updateInteractionTime);
+      setupSliderTouchEvents();
+      startSliderAutoScroll();
+      applySettings();
+    }
+
+    // Apertura popup video
+    function openVideoPopup(videoSrc) {
+      console.log("Apertura video:", videoSrc);
+      statueVideo.src = videoSrc;
+      videoPopupOverlay.style.display = 'flex';
+      statueVideo.load();
+      statueVideo.play().catch(error => console.error("Errore nel play:", error));
+    }
+
+    // Chiusura popup video
+    function closeVideoPopup() {
+      videoPopupOverlay.style.display = 'none';
+      statueVideo.pause();
+      statueVideo.currentTime = 0;
+    }
+
+    // Apertura galleria
+    galleryThumbnailContainer.addEventListener('click', () => {
+      myVideo.pause();
+      populateGallery();
+      videoContainer.style.display = 'none';
+      galleryContainer.style.display = 'flex';
+      galleryThumbnailContainer.style.opacity = "0.5";
+      restartContainer.style.opacity = "1";
+    });
+
+    // Ritorno al menu principale
+    function backToMain() {
+      stopSliderAutoScroll();
+      galleryContainer.style.display = 'none';
+      videoContainer.style.display = 'flex';
+      galleryThumbnailContainer.style.opacity = "1";
+    }
+    backToMenuButton.addEventListener('click', backToMain);
+
+    // POPUP IMMAGINE
+    function openImagePopup(src) {
+      popupImg.onerror = function () {
+        this.onerror = null;
+        this.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+         <rect fill="%23333" width="300" height="200"/><text fill="%23fff" font-family="Arial" font-size="16" x="50" y="100">Immagine non disponibile</text></svg>`;
+      };
+      popupImg.src = src;
+      popupOverlay.style.display = 'flex';
+    }
+
+    function closeImagePopup() {
+      popupOverlay.style.display = 'none';
+    }
+    closePopupBtn.addEventListener('click', closeImagePopup);
+
+    // Controlli popup video
+    statueReplayText.addEventListener('click', () => {
+      statueVideo.currentTime = 0;
+      statueVideo.play();
+    });
+    closeVideoPopupText.addEventListener('click', closeVideoPopup);
+    popupOverlay.addEventListener('click', e => { if (e.target === popupOverlay) closeImagePopup(); });
+    videoPopupOverlay.addEventListener('click', e => { if (e.target === videoPopupOverlay) closeVideoPopup(); });
+
+    // Gestione errori per il video principale
+    myVideo.addEventListener('error', function () {
+      videoContainer.innerHTML = '<div style="color:white;text-align:center;padding:20px;"><p>Video non disponibile.</p><p>Tocca per riprovare</p></div>';
+      videoContainer.addEventListener('click', () => {
+        videoContainer.innerHTML = '<video id="myVideo" playsinline><source src="./video/canovaovale.mp4" type="video/mp4">Il tuo browser non supporta il tag video.</video>';
+        myVideo = document.getElementById('myVideo');
+        initMainVideo();
+      });
+    });
+
+    window.addEventListener('online', function () {
+      if (myVideo.paused && myVideo.error) initMainVideo();
+    });
+
+    // FUNZIONI PANNELLO IMPOSTAZIONI
+
+    function setupDragPanel() {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      if (settingsHeader) {
+        settingsHeader.onmousedown = dragMouseDown;
+        settingsHeader.ontouchstart = dragTouchStart;
+      }
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+      function dragTouchStart(e) {
+        e = e || window.event;
+        e.preventDefault();
+        const touch = e.touches[0];
+        pos3 = touch.clientX;
+        pos4 = touch.clientY;
+        document.ontouchend = closeDragElement;
+        document.ontouchmove = elementTouchDrag;
+      }
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
+        settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
+        settingsPanel.style.transform = "none";
+      }
+      function elementTouchDrag(e) {
+        e = e || window.event;
+        const touch = e.touches[0];
+        pos1 = pos3 - touch.clientX;
+        pos2 = pos4 - touch.clientY;
+        pos3 = touch.clientX;
+        pos4 = touch.clientY;
+        settingsPanel.style.top = (settingsPanel.offsetTop - pos2) + "px";
+        settingsPanel.style.left = (settingsPanel.offsetLeft - pos1) + "px";
+        settingsPanel.style.transform = "none";
+      }
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        document.ontouchend = null;
+        document.ontouchmove = null;
+      }
+    }
+
+    function updateSettingsUI() {
+      minImageWidthInput.value = gallerySettings.minImageWidth;
+      minImageWidthValue.textContent = `${gallerySettings.minImageWidth}px`;
+      gridGapInput.value = gallerySettings.gridGap;
+      gridGapValue.textContent = `${gallerySettings.gridGap}px`;
+      galleryPaddingInput.value = gallerySettings.galleryPadding;
+      galleryPaddingValue.textContent = `${gallerySettings.galleryPadding}px`;
+      aspectRatioSelect.value = gallerySettings.aspectRatio;
+      if (gallerySettings.aspectRatio === 'custom') {
+        customRatioContainer.style.display = 'block';
+        customRatioInput.value = gallerySettings.customRatio;
+      } else {
+        customRatioContainer.style.display = 'none';
+      }
+      slideWidthInput.value = gallerySettings.slideWidth;
+      slideWidthValue.textContent = `${gallerySettings.slideWidth}px`;
+      slideGapInput.value = gallerySettings.slideGap;
+      slideGapValue.textContent = `${gallerySettings.slideGap}px`;
+      sliderSpeedInput.value = gallerySettings.sliderSpeed;
+      sliderSpeedValue.textContent = `${gallerySettings.sliderSpeed}px`;
+
+      // Aggiornamento valori per header e footer
+      headerPaddingInput.value = gallerySettings.headerPadding;
+      headerPaddingNumber.value = gallerySettings.headerPadding;
+      footerPaddingInput.value = gallerySettings.footerPadding;
+      footerPaddingNumber.value = gallerySettings.footerPadding;
+
+      // Aggiornamento valori per posizione immagini
+      img1PositionSelect.value = gallerySettings.img1Position;
+      img2PositionSelect.value = gallerySettings.img2Position;
+    }
+
+    function applySettings() {
+      // Applica la larghezza minima impostando il template delle colonne
+      // Invece di 'repeat(5, 1fr)', utilizziamo la larghezza minima specificata
+      gallery.style.gridTemplateColumns = `repeat(5, minmax(${gallerySettings.minImageWidth}px, 1fr))`;
+      gallery.style.gridGap = `${gallerySettings.gridGap}px`;
+      gallery.style.padding = `${gallerySettings.galleryPadding}px`;
+
+      // Applica lo stile agli elementi della galleria
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      let aspectRatioValue = gallerySettings.aspectRatio;
+      if (aspectRatioValue === 'custom' && gallerySettings.customRatio) {
+        aspectRatioValue = gallerySettings.customRatio;
+      }
+
+      galleryItems.forEach(item => {
+        item.style.aspectRatio = aspectRatioValue;
+      });
+
+      // Applica stile agli elementi dello slider video
+      const videoSlides = document.querySelectorAll('.video-slide');
+      videoSlides.forEach(slide => {
+        slide.style.width = `${gallerySettings.slideWidth}px`;
+        slide.style.marginRight = `${gallerySettings.slideGap}px`;
+      });
+
+      // Applica padding header e footer
+      document.getElementById('gallery-header').style.padding = `${gallerySettings.headerPadding}px 0`;
+      document.getElementById('gallery-footer').style.padding = `${gallerySettings.footerPadding}px 0`;
+    }
+
+    async function loadSettings() {
+      try {
+        const saved = localStorage.getItem('gallerySettings');
+        if (saved) {
+          gallerySettings = JSON.parse(saved);
+          console.log('Impostazioni caricate dal localStorage');
+        } else {
+          gallerySettings = { ...defaultSettings };
+        }
+        updateSettingsUI();
+      } catch (error) {
+        console.error('Errore nel caricamento delle impostazioni:', error);
+        gallerySettings = { ...defaultSettings };
+        updateSettingsUI();
+      }
+    }
+
+    function saveSettings() {
+      localStorage.setItem('gallerySettings', JSON.stringify(gallerySettings));
+      alert('Impostazioni salvate nel browser.');
+      toggleSettingsPanel(false);
+    }
+
+    function resetSettings() {
+      gallerySettings = { ...defaultSettings };
+      updateSettingsUI();
+      applySettings();
+    }
+
+    function toggleSettingsPanel(show) {
+      if (show) {
+        modalOverlay.style.display = 'block';
+        settingsPanel.style.display = 'block';
+        settingsPanel.style.top = '50%';
+        settingsPanel.style.left = '50%';
+        settingsPanel.style.transform = 'translate(-50%, -50%)';
+        updateSettingsUI();
+      } else {
+        modalOverlay.style.display = 'none';
+        settingsPanel.style.display = 'none';
+      }
+    }
+
+    // Event listeners per i controlli nel pannello impostazioni
+    aspectRatioSelect.addEventListener('change', function () {
+      const isCustom = this.value === 'custom';
+      customRatioContainer.style.display = isCustom ? 'block' : 'none';
+      gallerySettings.aspectRatio = this.value;
+      applySettings();
+    });
+
+    minImageWidthInput.addEventListener('input', function () {
+      gallerySettings.minImageWidth = parseInt(this.value);
+      minImageWidthValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    gridGapInput.addEventListener('input', function () {
+      gallerySettings.gridGap = parseInt(this.value);
+      gridGapValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    galleryPaddingInput.addEventListener('input', function () {
+      gallerySettings.galleryPadding = parseInt(this.value);
+      galleryPaddingValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    customRatioInput.addEventListener('input', function () {
+      gallerySettings.customRatio = this.value;
+      applySettings();
+    });
+
+    slideWidthInput.addEventListener('input', function () {
+      gallerySettings.slideWidth = parseInt(this.value);
+      slideWidthValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    slideGapInput.addEventListener('input', function () {
+      gallerySettings.slideGap = parseInt(this.value);
+      slideGapValue.textContent = `${this.value}px`;
+      applySettings();
+    });
+
+    sliderSpeedInput.addEventListener('input', function () {
+      gallerySettings.sliderSpeed = parseInt(this.value);
+      sliderSpeedValue.textContent = `${this.value}px`;
+    });
+
+    // Event listener per i selettori delle posizioni delle immagini
+    img1PositionSelect.addEventListener('change', function () {
+      gallerySettings.img1Position = parseInt(this.value);
+      // Se le due immagini hanno la stessa posizione, sposta la seconda
+      if (gallerySettings.img1Position === gallerySettings.img2Position) {
+        gallerySettings.img2Position = gallerySettings.img1Position === 5 ? 4 : gallerySettings.img1Position + 1;
+        img2PositionSelect.value = gallerySettings.img2Position;
+      }
+      populateGallery(); // Ricarica la galleria con le nuove posizioni
+    });
+
+    img2PositionSelect.addEventListener('change', function () {
+      gallerySettings.img2Position = parseInt(this.value);
+      // Se le due immagini hanno la stessa posizione, sposta la prima
+      if (gallerySettings.img1Position === gallerySettings.img2Position) {
+        gallerySettings.img1Position = gallerySettings.img2Position === 1 ? 2 : gallerySettings.img2Position - 1;
+        img1PositionSelect.value = gallerySettings.img1Position;
+      }
+      populateGallery(); // Ricarica la galleria con le nuove posizioni
+    });
+
+    // Event listener per i controlli header e footer
+    headerPaddingInput.addEventListener('input', function () {
+      gallerySettings.headerPadding = parseInt(this.value);
+      headerPaddingNumber.value = this.value;
+      applySettings();
+    });
+
+    headerPaddingNumber.addEventListener('change', function () {
+      const value = parseInt(this.value);
+      if (value >= 0 && value <= 50) {
+        gallerySettings.headerPadding = value;
+        headerPaddingInput.value = value;
+        applySettings();
+      } else {
+        this.value = gallerySettings.headerPadding; // Ripristina valore precedente
+      }
+    });
+
+    footerPaddingInput.addEventListener('input', function () {
+      gallerySettings.footerPadding = parseInt(this.value);
+      footerPaddingNumber.value = this.value;
+      applySettings();
+    });
+
+    footerPaddingNumber.addEventListener('change', function () {
+      const value = parseInt(this.value);
+      if (value >= 0 && value <= 50) {
+        gallerySettings.footerPadding = value;
+        footerPaddingInput.value = value;
+        applySettings();
+      } else {
+        this.value = gallerySettings.footerPadding; // Ripristina valore precedente
+      }
+    });
+
+    saveSettingsBtn.addEventListener('click', saveSettings);
+    closeSettingsBtn.addEventListener('click', () => toggleSettingsPanel(false));
+    resetSettingsBtn.addEventListener('click', resetSettings);
+    settingsCloseBtn.addEventListener('click', () => toggleSettingsPanel(false));
+    modalOverlay.addEventListener('click', () => toggleSettingsPanel(false));
+
+    document.addEventListener('keydown', function (e) {
+      if (e.altKey && e.key === 'i') {
+        e.preventDefault();
+        toggleSettingsPanel(settingsPanel.style.display === 'none');
+      }
+    });
+
+    // Gestione del pulsante di spegnimento
+    let touchCount = 0;
+    let timeout = null;
+
+    function registerTouch(event) {
+      const y = event.touches ? event.touches[0].clientY : event.clientY;
+      if (y > 100) return; // accetta solo tocchi nella parte alta dello schermo
+
+      touchCount++;
+
+      if (touchCount >= 7) {
+        document.getElementById("shutdownButton").style.display = "block";
+        touchCount = 0; // reset
+      }
+
+      // Reset conteggio se troppo tempo tra i tocchi
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        touchCount = 0;
+      }, 3000);
+    }
+
+    function shutdown() {
+      fetch("http://127.0.0.1:3000/shutdown", {
+        method: "GET"
+      }).then(() => {
+        alert("Spegnimento in corso...");
+      }).catch(() => {
+        alert("Errore nella richiesta di spegnimento");
+      });
+    }
+
+    // Supporta click e tocchi
+    window.addEventListener("click", registerTouch);
+    window.addEventListener("touchstart", registerTouch);
+  </script>
 </body>
 
 </html>
