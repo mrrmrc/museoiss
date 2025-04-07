@@ -691,6 +691,14 @@
       </div>
       <div class="icon-text">Riavvia Presentazione</div>
     </div>
+    <!-- Icona Sonificazione -->
+    <div class="icon-container" id="sonification-container">
+      <div class="icon-wrapper">
+        <img src="./bn.jpg" alt="Icona Sonificazione"
+          onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot;><rect fill=&quot;%23777&quot; width=&quot;100&quot; height=&quot;100&quot; /><text fill=&quot;%23fff&quot; font-family=&quot;Arial&quot; font-size=&quot;14&quot; x=&quot;10&quot; y=&quot;50&quot;>Sonificazione</text></svg>'">
+      </div>
+      <div class="icon-text">Sonificazione Bozzetti</div>
+    </div>
     <!-- Icona galleria -->
     <div class="icon-container" id="gallery-thumbnail-container">
       <div class="icon-wrapper">
@@ -871,6 +879,7 @@
     const myVideo = document.getElementById('myVideo');
     const videoContainer = document.getElementById('video-container');
     let restartContainer = document.getElementById('restart-container');
+    const sonificationContainer = document.getElementById('sonification-container');
     const galleryThumbnailContainer = document.getElementById('gallery-thumbnail-container');
     const galleryContainer = document.getElementById('gallery-container');
     const gallery = document.getElementById('gallery');
@@ -892,6 +901,7 @@
     const statueReplayText = document.getElementById('statueReplayText');
     const closeVideoPopupText = document.getElementById('closeVideoPopupText');
 
+    // Pannello impostazioni
     // Pannello impostazioni
     const modalOverlay = document.getElementById('modal-overlay');
     const settingsPanel = document.getElementById('settings-panel');
@@ -970,10 +980,45 @@
       myVideo.pause();
     });
 
-    // Riavvio video
+    // Riavvio presentazione (torna allo stato iniziale dell'applicazione)
     restartContainer.addEventListener('click', () => {
+      // Chiude la galleria se è aperta
+      if (galleryContainer.style.display === 'flex') {
+        stopSliderAutoScroll();
+        galleryContainer.style.display = 'none';
+        videoContainer.style.display = 'flex';
+        galleryThumbnailContainer.style.opacity = "1";
+      }
+
+      // Chiude il popup video se è aperto
+      if (videoPopupOverlay.style.display === 'flex') {
+        closeVideoPopup();
+      }
+
+      // Chiude il popup immagine se è aperto
+      if (popupOverlay.style.display === 'flex') {
+        closeImagePopup();
+      }
+
+      // Ripristina il video principale allo stato iniziale
+      myVideo.src = "./video/canovaovale.mp4";
+      myVideo.load();
       myVideo.currentTime = 0;
-      myVideo.play();
+      myVideo.pause(); // Lo mette in pausa anziché avviarlo automaticamente
+
+      // Ripristina lo stato dei pulsanti
+      galleryThumbnailContainer.style.opacity = "1";
+      restartContainer.style.opacity = "1";
+
+      // Chiude il pannello impostazioni se è aperto
+      if (settingsPanel.style.display === 'block') {
+        toggleSettingsPanel(false);
+      }
+    });
+
+    // Gestione click sul pulsante Sonificazione Bozzetti
+    sonificationContainer.addEventListener('click', () => {
+      openVideoPopup("./video/canova sound.mp4");
     });
 
     // Configurazione frecce di navigazione
